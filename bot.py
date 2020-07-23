@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from os import environ
 from os.path import join, dirname
@@ -22,3 +23,10 @@ def _prefix_callable(bot, msg):
 class BardBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=_prefix_callable, help_command=None)
+
+    async def on_ready(self):
+        await self.change_presence(
+            activity=discord.Game(
+                name=f"{environ.get('prefix', '::')}help | 読み上げBot"
+            )
+        )
