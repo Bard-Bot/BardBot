@@ -19,4 +19,3 @@ for extension in extensions:
     bot.load_extension(extension)
 
 bot.run(environ.get('TOKEN'))
-

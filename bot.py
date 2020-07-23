@@ -1,6 +1,4 @@
-from sys import prefix
 from discord.ext import commands
-import discord
 from os import environ
 from os.path import join, dirname
 from dotenv import load_dotenv
@@ -12,7 +10,12 @@ load_dotenv(dotenv_path)
 
 def _prefix_callable(bot, msg):
     user_id = bot.user.id
-    base = [f'<@!{user_id}> ', f'<@{user_id}> ', environ.get('prefix', '::'), 'bard::']
+    base = [f'<@!{user_id}> ',
+            f'<@{user_id}> ',
+            environ.get('prefix', '::'),
+            'bard::',
+            ]
+
     return base
 
 
