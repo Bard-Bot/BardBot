@@ -13,7 +13,7 @@ load_dotenv(dotenv_path)
 bot = BardBot()
 
 
-extensions = []
+extensions = ['cogs.reload']
 
 for extension in extensions:
     bot.load_extension(extension)
