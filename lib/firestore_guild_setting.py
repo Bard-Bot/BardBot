@@ -48,4 +48,4 @@ class Setting:
         self.collection = self.db.collection('guild_settings')
 
     def get(self, guild_id):
-        return
+        return SettingSnapshot(self.collection.document(str(guild_id)), self)
