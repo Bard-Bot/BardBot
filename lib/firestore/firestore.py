@@ -1,6 +1,6 @@
 import firebase_admin
-from firestore_guild import Guild
-from firestore_guild_setting import Setting
+from guild import Guild
+from guild_setting import Setting
 from firebase_admin import credentials
 from firebase_admin import firestore
 import os
