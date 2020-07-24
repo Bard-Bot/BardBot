@@ -7,14 +7,14 @@ class SettingSnapshot:
     async def data(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
 
-        return result.to_dict()
+        return result.to_dict() or await self.create()
 
     async def exists(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
 
         return result.exists
 
-    async def create(self, guild_id):
+    async def create(self):
         if await self.exists():
             return
         payload = dict(
@@ -25,6 +25,7 @@ class SettingSnapshot:
             keep=True
         )
         await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
+        return payload
 
     async def edit(self, name=None, emoji=None, bot=None, limit=None, keep=None):
         data = await self.data()
