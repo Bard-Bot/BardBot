@@ -3,6 +3,9 @@ from discord.ext import commands
 from os import environ
 from os.path import join, dirname
 from dotenv import load_dotenv
+import asyncio
+import uvloop
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 load_dotenv(verbose=True)
 
 dotenv_path = join(dirname(__file__), '.env')
@@ -22,7 +25,8 @@ def _prefix_callable(bot, msg):
 
 class BardBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=_prefix_callable, help_command=None)
+        super().__init__(command_prefix=_prefix_callable, help_command=None,
+                         loop=asyncio.get_event_loop())
 
     async def on_ready(self):
         await self.change_presence(
