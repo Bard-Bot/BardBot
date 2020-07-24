@@ -18,6 +18,13 @@ class GuildSnapshot:
 
         return result.exists
 
+    async def create(self):
+        if await self.exists():
+            return
+        payload = dict(subscribe=0, count=1500)
+
+        await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
+
     async def spend_char(self, count):
         """成功した場合はTrue、文字数が足りなかった場合はFalseを返す"""
         guild = await self.data()
