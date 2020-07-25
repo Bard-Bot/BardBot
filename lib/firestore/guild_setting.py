@@ -2,6 +2,7 @@ class SettingSnapshot:
     def __init__(self, document, setting):
         self.document = document
         self.setting = setting
+        self.executor = setting.executor
         self.bot = setting.bot
 
     async def data(self):

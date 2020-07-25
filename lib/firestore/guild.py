@@ -6,6 +6,7 @@ class GuildSnapshot:
     def __init__(self, document, guild):
         self.document = document
         self.guild = guild
+        self.executor = guild.executor
         self.bot = guild.bot
 
     async def data(self):
