@@ -1,6 +1,46 @@
 from functools import partial
 
 
+class LocalUserSettingData:
+    def __init__(self, guild_id, data):
+        self.guild_id = guild_id
+        self.data = data
+
+    @property
+    def voice(self):
+        return self.data['voice']
+
+    @property
+    def pitch(self):
+        return self.data['pitch']
+
+    @property
+    def speed(self):
+        return self.data['speed']
+
+
+class UserSettingData:
+    def __init__(self, data):
+        self.data = data
+
+    @property
+    def voice(self):
+        return self.data['voice']
+
+    @property
+    def pitch(self):
+        return self.data['pitch']
+
+    @property
+    def speed(self):
+        return self.data['speed']
+
+    def local(self, guild_id):
+        if str(guild_id) not in self.data['local'].keys():
+            return None
+        return LocalUserSettingData(guild_id, self.data['local'][str(guild_id)])
+
+
 class UserSettingSnapshot:
     def __init__(self, document, user_setting):
         self.document = document
@@ -12,9 +52,9 @@ class UserSettingSnapshot:
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
         d = result.to_dict()
         if d is None:
-            return await self.create()
+            return UserSettingData(await self.create())
 
-        return d
+        return UserSettingData(d)
 
     async def exists(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
@@ -36,11 +76,26 @@ class UserSettingSnapshot:
 
     async def edit(self, voice=None, pitch=None, speed=None):
         base = await self.data()
-        voice = base['voice'] if voice is None else voice
-        pitch = base['pitch'] if pitch is None else pitch
-        speed = base['speed'] if speed is None else speed
+        voice = base.voice if voice is None else voice
+        pitch = base.pitch if pitch is None else pitch
+        speed = base.speed if speed is None else speed
 
         payload = dict(voice=voice, pitch=pitch, speed=speed)
+
+        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, payload, merge=True))
+
+    async def edit_local(self, guild_id, voice=None, pitch=None, speed=None):
+        base = await self.data()
+        local = base.local(guild_id)
+        voice = local.voice if voice is None else voice
+        pitch = local.pitch if pitch is None else pitch
+        speed = local.speed if speed is None else speed
+
+        payload = dict(
+            local={
+                str(guild_id): dict(voice=voice, pitch=pitch, speed=speed)
+            }
+        )
 
         await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, payload, merge=True))
 
