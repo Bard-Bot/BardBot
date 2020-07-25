@@ -2,6 +2,7 @@ import firebase_admin
 from guild import Guild
 from guild_setting import Setting
 from guild_dict import GuildDict
+from user_setting import UserSetting
 from firebase_admin import credentials
 from firebase_admin import firestore
 import os
@@ -25,3 +26,4 @@ class FireStore:
         self.guild = Guild(self)
         self.setting = Setting(self)
         self.dict = GuildDict(self)
+        self.user = UserSetting(self)
