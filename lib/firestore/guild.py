@@ -42,14 +42,13 @@ class GuildSnapshot:
         return GuildData(payload)
 
     async def spend_char(self, count):
-        """成功した場合はTrue、文字数が足りなかった場合はFalseを返す"""
+        """成功した場合はTrue、文字数が足りなかった場合はNoneを返す"""
         guild = await self.data()
-        if guild.count - count < 0:
-            await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': 0}, merge=True))
-            return False
+        if guild.count - count > 0:
+            await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': Increment(-count)}, merge=True))
+            return True
 
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': Increment(-count)}, merge=True))
-        return True
+        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': 0}, merge=True))
 
 
 class Guild:
