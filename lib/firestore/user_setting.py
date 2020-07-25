@@ -1,24 +1,6 @@
 from functools import partial
 
 
-class LocalUserSettingData:
-    def __init__(self, guild_id, data):
-        self.guild_id = guild_id
-        self.data = data
-
-    @property
-    def voice(self):
-        return self.data['voice']
-
-    @property
-    def pitch(self):
-        return self.data['pitch']
-
-    @property
-    def speed(self):
-        return self.data['speed']
-
-
 class UserSettingData:
     def __init__(self, data):
         self.data = data
@@ -34,11 +16,6 @@ class UserSettingData:
     @property
     def speed(self):
         return self.data['speed']
-
-    def local(self, guild_id):
-        if str(guild_id) not in self.data['local'].keys():
-            return None
-        return LocalUserSettingData(guild_id, self.data['local'][str(guild_id)])
 
 
 class UserSettingSnapshot:
@@ -65,8 +42,7 @@ class UserSettingSnapshot:
         if await self.exists():
             return
         payload = dict(
-            voice='A',  # グローバル設定
-            local={},  # ローカル設定
+            voice=dict(ja='A', en='A'),  # グローバル設定
             pitch=0.0,
             speed=1.0,
         )
@@ -83,29 +59,6 @@ class UserSettingSnapshot:
         payload = dict(voice=voice, pitch=pitch, speed=speed)
 
         await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, payload, merge=True))
-
-    async def edit_local(self, guild_id, voice=None, pitch=None, speed=None):
-        base = await self.data()
-        local = base.local(guild_id)
-        voice = local.voice if voice is None else voice
-        pitch = local.pitch if pitch is None else pitch
-        speed = local.speed if speed is None else speed
-
-        payload = dict(
-            local={
-                str(guild_id): dict(voice=voice, pitch=pitch, speed=speed)
-            }
-        )
-
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, payload, merge=True))
-
-    async def delete_local(self, guild_id):
-        base = await self.data()
-        local = base.local(guild_id)
-        if local is None:
-            return False
-        del base.data['local'][str(guild_id)]
-        return await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'local': base.data['local']}, merge=True))
 
 
 class UserSetting:

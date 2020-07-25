@@ -15,6 +15,7 @@ bot = BardBot()
 
 extensions = [
     'cogs.reload',
+    'cogs.user_setting'
 ]
 
 for extension in extensions:
