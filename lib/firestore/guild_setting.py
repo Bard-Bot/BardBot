@@ -1,3 +1,28 @@
+class SettingData:
+    def __init__(self, data):
+        self.data = data
+
+    @property
+    def name(self):
+        return self.data['name']
+
+    @property
+    def emoji(self):
+        return self.data['emoji']
+
+    @property
+    def bot(self):
+        return self.data['bot']
+
+    @property
+    def limit(self):
+        return self.data['limit']
+
+    @property
+    def keep(self):
+        return self.data['keep']
+
+
 class SettingSnapshot:
     def __init__(self, document, setting):
         self.document = document
@@ -8,7 +33,7 @@ class SettingSnapshot:
     async def data(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
 
-        return result.to_dict() or await self.create()
+        return SettingData(result.to_dict()) or await self.create()
 
     async def exists(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
@@ -26,7 +51,7 @@ class SettingSnapshot:
             keep=True
         )
         await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
-        return payload
+        return SettingData(payload)
 
     async def edit(self, name=None, emoji=None, bot=None, limit=None, keep=None):
         data = await self.data()
