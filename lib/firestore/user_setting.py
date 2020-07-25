@@ -99,6 +99,14 @@ class UserSettingSnapshot:
 
         await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, payload, merge=True))
 
+    async def delete_local(self, guild_id):
+        base = await self.data()
+        local = base.local(guild_id)
+        if local is None:
+            return False
+        del base.data['local'][str(guild_id)]
+        return await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'local': base.data['local']}, merge=True))
+
 
 class UserSetting:
     def __init__(self, firestore):
