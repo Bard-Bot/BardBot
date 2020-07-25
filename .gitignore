@@ -126,3 +126,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+bard-bot-firestore.json
