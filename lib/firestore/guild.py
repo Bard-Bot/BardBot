@@ -2,6 +2,19 @@ from google.cloud.firestore_v1 import Increment
 from functools import partial
 
 
+class GuildData:
+    def __init__(self, data):
+        self.data = data
+
+    @property
+    def count(self):
+        return self.data['count']
+
+    @property
+    def subscribe(self):
+        return self.data['subscribe']
+
+
 class GuildSnapshot:
     def __init__(self, document, guild):
         self.document = document
@@ -12,7 +25,7 @@ class GuildSnapshot:
     async def data(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
 
-        return result.to_dict()
+        return GuildData(result.to_dict())
 
     async def exists(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
@@ -26,12 +39,12 @@ class GuildSnapshot:
         payload = dict(subscribe=0, count=1500)
 
         await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
-        return payload
+        return GuildData(payload)
 
     async def spend_char(self, count):
         """成功した場合はTrue、文字数が足りなかった場合はFalseを返す"""
         guild = await self.data()
-        if guild['count'] - count < 0:
+        if guild.count - count < 0:
             await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': 0}, merge=True))
             return False
 
