@@ -1,7 +1,7 @@
 from os import environ
 from os.path import join, dirname
 from dotenv import load_dotenv
-
+import sentry_sdk
 from bot import BardBot
 
 load_dotenv(verbose=True)
@@ -21,4 +21,10 @@ extensions = [
 for extension in extensions:
     bot.load_extension(extension)
 
-bot.run(environ.get('TOKEN'))
+try:
+    bot.run(environ.get('TOKEN'))
+except RuntimeError as e:
+    if str(e) != "Event loop stopped before Future completed.":
+        sentry_sdk.capture_exception(e)
+except Exception as e:
+    sentry_sdk.capture_exception(e)
