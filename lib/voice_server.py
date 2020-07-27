@@ -122,8 +122,7 @@ class VoiceServer:
             self.send_voice_channel = channel
             self.voice_client = client
         except discord.ClientException:
-            await asyncio.sleep(5)
-            await self.reconnect(channel)
+            pass
 
     async def loop(self):
         try:

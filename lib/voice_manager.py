@@ -16,11 +16,17 @@ class VoiceManager:
             pass
 
     async def close(self, guild_id, text="読み上げを終了します。"):
-        await self.servers[guild_id].close(text)
+        try:
+            await self.servers[guild_id].close(text)
+        except Exception:
+            pass
         self.delete(guild_id)
 
     async def all_close(self, text="読み上げを終了します。"):
         for key in list(self.servers):
             server = self.servers[key]
-            await server.close(text)
+            try:
+                await server.close(text)
+            except Exception:
+                pass
             self.delete(key)
