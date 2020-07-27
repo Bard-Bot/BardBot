@@ -78,6 +78,12 @@ class VoiceData:
             self._text = self._text.replace(key, value)
         return self
 
+    async def spend_char(self):
+        r = await self.bot.firestore.guild.get(self.message.guild.id).spend_char(len(self.text))
+        if r is None:
+            return False
+        return True
+
 
 class VoiceServer:
     def __init__(self, bot, send_voice_channel, read_text_channel, voice_client):
@@ -85,7 +91,7 @@ class VoiceServer:
         self.send_voice_channel = send_voice_channel
         self.read_text_channel = read_text_channel
         self.voice_client: discord.VoiceClient = voice_client
-        self.queue = asyncio.Queue(maxsize=20)
+        self.queue = asyncio.Queue(maxsize=20, loop=bot.loop)
         self.last_author_id = None
         self.session = None
         self.task = self.bot.loop.create_task(self.loop())
@@ -102,6 +108,7 @@ class VoiceServer:
         await self.session.close()
         await self.voice_client.disconnect(force=True)
         self.task.cancel()
+        await self.read_text_channel.send(text)
 
     async def move_voice_channel(self, new_voice_channel):
         self.voice_client.stop()
@@ -125,6 +132,11 @@ class VoiceServer:
                 item.convert_w().convert_url().convert_emoji().set_name(
                     self.last_author_id).convert_guild_dict().set_text_length()
 
+                if not await item.spend_char():
+                    await self.close("申し訳ございません。今月の利用可能文字数を超えてしまいました。\n"
+                                     "まだご利用になりたい場合は、公式サイト( https://bardbot.net )より購入してください。")
+                    return
+
                 while self.voice_client.is_playing():
                     await asyncio.sleep(0.5, loop=self.bot.loop)
                 await asyncio.sleep(0.2, loop=self.bot.loop)
@@ -135,8 +147,8 @@ class VoiceServer:
             pass
 
         except audioop.error:
-            await self.read_text_channel.send("内部エラーが発生しました。再接続してください。")
+            await self.close("内部エラーが発生しました。再接続してください。")
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            await self.read_text_channel.send("内部エラーが発生しました。再接続してください。")
+            await self.close("内部エラーが発生しました。再接続してください。")
