@@ -24,7 +24,7 @@ async def edit_voice_type(bot, ctx, language, voice_type):
 
 
 async def en_setting(bot, ctx, voice_type):
-    if voice_type not in ("a", "b", "c", "d", "A", "B", "C", "D"):
+    if voice_type not in ("a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"):
         await ctx.send("ボイスの設定はA,B,C,Dから選んでください。")
         return
 
