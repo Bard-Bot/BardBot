@@ -50,11 +50,24 @@ class Voice(commands.Cog):
 
     @commands.command()
     async def leave(self, ctx):
-        pass
+        async with ctx.channel.typing():
+            try:
+                server = self.bot.voice_manager.get(ctx.guild.id)
+                if server is None:
+                    await ctx.send("このサーバーは接続されていません。")
+                    return
+
+                await self.bot.voice_manager.close(ctx.guild.id)
+
+            except Exception as e:
+                self.bot.voice_manager.delete(ctx.guild.id)
+                await ctx.send('予期せぬエラーが発生しました。再度接続してください。エラー内容は運営に送信されます。')
+                sentry_sdk.capture_exception(e)
 
     @commands.command()
     async def move(self, ctx):
         pass
+
 
 def setup(bot):
     return bot.add_cog(Voice(bot))
