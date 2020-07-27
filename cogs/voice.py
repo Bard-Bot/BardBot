@@ -1,5 +1,5 @@
 from discord.ext import commands
-from lib.voice_server import VoiceData, VoiceServer
+from lib.voice_server import VoiceServer
 import discord
 import asyncio
 import sentry_sdk
