@@ -13,9 +13,13 @@ class Voice(commands.Cog):
     async def join(self, ctx):
         async with ctx.channel.typing():
             try:
+
+                # サーバーがすでに接続されていた場合
                 if self.bot.voice_manager.get(ctx.guild.id) is not None:
                     await ctx.send("このサーバーはすでに接続されています。moveコマンドを使用するか、切断してください。")
                     return
+
+                # 実行したユーザーがVCにいない場合
                 if (ctx.author.voice is None) or (ctx.author.voice.channel is None):
                     await ctx.send("ボイスチャンネルに接続した状態で実行してください。")
                     return
@@ -30,14 +34,20 @@ class Voice(commands.Cog):
                                    "まだご利用になりたい場合は、公式サイトより購入してください。")
                     return
 
+                # ボイスサーバーの作成
                 server = VoiceServer(self.bot, voice_channel, ctx.channel, voice_client)
                 await server.setup()
+
                 self.bot.voice_manager.set(ctx.guild.id, server)
+
                 await ctx.send("接続しました。")
+
                 try:
+                    # 多くのbotがやってるからつけてみた
                     await ctx.guild.me.edit(deafen=True)
                 except Exception:
                     pass
+
             except discord.ClientException:
                 await ctx.send("このサーバーはすでに接続されています。moveコマンドを使用するか、切断してください。")
 
@@ -61,6 +71,7 @@ class Voice(commands.Cog):
                     await ctx.send("Botと同じボイスチャンネルで実行してください。")
                     return
 
+                # 処理を終了させる
                 await self.bot.voice_manager.close(ctx.guild.id)
 
             except Exception as e:
@@ -70,6 +81,7 @@ class Voice(commands.Cog):
 
     @commands.command()
     async def move(self, ctx):
+        """Botを移動させる"""
         async with ctx.channel.typing():
             try:
                 server = self.bot.voice_manager.get(ctx.guild.id)
@@ -85,7 +97,9 @@ class Voice(commands.Cog):
                     await ctx.send("Botと同じボイスチャンネルで実行してください。")
                     return
 
+                # VoiceClient.move_toを実行
                 await server.move_voice_channel(ctx.author.voice.channel)
+
             except discord.ClientException:
                 await ctx.send("失敗しました。もう一度実行してください。人数が埋まっているなどの理由が考えられます。")
                 return
