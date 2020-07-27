@@ -8,11 +8,6 @@ from firebase_admin import firestore
 import os
 import concurrent.futures
 
-cred = credentials.Certificate(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
-
-# TODO: credentialsをasyncio対応にする
-firebase_admin.initialize_app(cred)
-
 
 class FireStore:
     def __init__(self, bot):
@@ -20,6 +15,10 @@ class FireStore:
         プランと残り文字数、プランへお金を出した人を保存する
         :param bot: discord.ext.commands.Bot
         """
+        cred = credentials.Certificate(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
+
+        # TODO: credentialsをasyncio対応にする
+        firebase_admin.initialize_app(cred)
         self.bot = bot
         self.db = firestore.client()
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=100)

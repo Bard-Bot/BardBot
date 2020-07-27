@@ -4,6 +4,7 @@ from os import environ
 from os.path import join, dirname
 from dotenv import load_dotenv
 from lib.firestore.firestore import FireStore
+from lib.google_cloud_token import TokenGenerator
 import asyncio
 import uvloop
 import sentry_sdk
@@ -32,7 +33,10 @@ class BardBot(commands.Bot):
                          loop=asyncio.get_event_loop())
 
         self.firestore = FireStore(self)
+        self.google_cloud_token = None
+        self.token_generator = TokenGenerator(environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
         sentry_sdk.capture_exception(Exception("This is an example of an error message."))
+        self.loop.create_task(self.google_cloud_token_loop())
 
     async def on_command_error(self, context, exception):
         if isinstance(exception, commands.CommandNotFound):
@@ -48,3 +52,8 @@ class BardBot(commands.Bot):
                 name=f"{environ.get('prefix', '::')}help | 読み上げBot"
             )
         )
+
+    async def google_cloud_token_loop(self):
+        while not self.is_closed():
+            self.google_cloud_token = await self.token_generator.get()
+            await asyncio.sleep(3000)
