@@ -57,6 +57,10 @@ class Voice(commands.Cog):
                     await ctx.send("このサーバーは接続されていません。")
                     return
 
+                if ctx.author.voice.channel.id != server.send_voice_channel.id:
+                    await ctx.send("Botと同じボイスチャンネルで実行してください。")
+                    return
+
                 await self.bot.voice_manager.close(ctx.guild.id)
 
             except Exception as e:
@@ -66,7 +70,29 @@ class Voice(commands.Cog):
 
     @commands.command()
     async def move(self, ctx):
-        pass
+        async with ctx.channel.typing():
+            try:
+                server = self.bot.voice_manager.get(ctx.guild.id)
+                if server is None:
+                    await ctx.send("このサーバーは接続されていません。")
+                    return
+
+                if (ctx.author.voice is None) or (ctx.author.voice.channel is None):
+                    await ctx.send("ボイスチャンネルに接続した状態で実行してください。")
+                    return
+
+                if ctx.author.voice.channel.id != server.send_voice_channel.id:
+                    await ctx.send("Botと同じボイスチャンネルで実行してください。")
+                    return
+
+                await server.move_voice_channel(ctx.author.voice.channel)
+            except discord.ClientException:
+                await ctx.send("失敗しました。もう一度実行してください。人数が埋まっているなどの理由が考えられます。")
+                return
+
+            except Exception as e:
+                await ctx.send('予期せぬエラーが発生しました。再度接続してください。エラー内容は運営に送信されます。')
+                sentry_sdk.capture_exception(e)
 
 
 def setup(bot):
