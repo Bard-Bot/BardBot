@@ -5,6 +5,7 @@ import io
 import audioop
 import re
 import sentry_sdk
+import aiohttp
 
 
 class VoiceData:
@@ -24,7 +25,7 @@ class VoiceData:
     async def source(self, session):
         data = await fetch_voice_data(
             session=session,
-            token=self.bot.firestore_token,
+            token=self.google_cloud_token,
             text=self.text,
             language_code=self.language,
             name=self.voice_setting.voice[self.language],
@@ -83,10 +84,39 @@ class VoiceServer:
         self.bot = bot
         self.send_voice_channel = send_voice_channel
         self.read_text_channel = read_text_channel
-        self.voice_client = voice_client
+        self.voice_client: discord.VoiceClient = voice_client
         self.queue = asyncio.Queue(maxsize=20)
         self.last_author_id = None
         self.session = None
+        self.task = self.bot.loop.create_task(self.loop())
+
+    async def setup(self):
+        self.session = aiohttp.ClientSession(loop=self.bot.loop)
+        return True
+
+    async def put(self, item):
+        await self.queue.put(item)
+
+    async def close(self, text="読み上げを終了します。"):
+        self.voice_client.stop()
+        await self.session.close()
+        await self.voice_client.disconnect(force=True)
+        self.task.cancel()
+
+    async def move_voice_channel(self, new_voice_channel):
+        self.voice_client.stop()
+        self.send_voice_channel = new_voice_channel
+        await self.voice_client.move_to(new_voice_channel)
+        return True
+
+    async def reconnect(self, channel):
+        try:
+            client = await channel.connect(timeout=5)
+            self.send_voice_channel = channel
+            self.voice_client = client
+        except discord.ClientException:
+            await asyncio.sleep(5)
+            await self.reconnect(channel)
 
     async def loop(self):
         try:
