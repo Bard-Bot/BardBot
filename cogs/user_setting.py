@@ -1,5 +1,7 @@
 from discord.ext import commands
 import discord
+JA_VOICE_TYPES = "ABCD"
+EN_VOICE_TYPES = "ABCDEF"
 
 
 how_to_change = """
@@ -15,6 +17,10 @@ how_to_change = """
 """
 
 
+def get_types_text(types):
+    return f"{', '.join(t.lower() for t in types)},{', '.join(t for t in types)}"
+
+
 async def edit_voice_type(bot, ctx, language, voice_type):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
@@ -24,16 +30,16 @@ async def edit_voice_type(bot, ctx, language, voice_type):
 
 
 async def en_setting(bot, ctx, voice_type):
-    if voice_type not in ("a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"):
-        await ctx.send("ボイスの設定はA,B,C,Dから選んでください。")
+    if voice_type.upper() not in EN_VOICE_TYPES:
+        await ctx.send(f"ボイスの設定は{get_types_text(EN_VOICE_TYPES)}から選んでください。")
         return
 
     await edit_voice_type(bot, ctx, 'en', voice_type.upper())
 
 
 async def ja_setting(bot, ctx, voice_type):
-    if voice_type not in ("a", "b", "c", "d", "A", "B", "C", "D"):
-        await ctx.send("ボイスの設定はA,B,C,Dから選んでください。")
+    if voice_type.upper() not in JA_VOICE_TYPES:
+        await ctx.send(f"ボイスの設定は{get_types_text(JA_VOICE_TYPES)}から選んでください。")
         return
 
     await edit_voice_type(bot, ctx, 'ja', voice_type.upper())
