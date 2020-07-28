@@ -45,6 +45,9 @@ class BardBot(commands.Bot):
             return
         if isinstance(exception, commands.CommandOnCooldown):
             return
+        if isinstance(exception, commands.BadArgument) or isinstance(exception, commands.BadUnionArgument):
+            await context.send('引数の型が間違っています。ヘルプコマンドを参照してください。')
+            return
 
         sentry_sdk.capture_exception(exception.original)
 

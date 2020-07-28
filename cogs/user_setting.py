@@ -10,10 +10,10 @@ how_to_change = """
 `{prefix}voice en [{en}]` 英語の音声設定を変更します。デフォルトはAです。
 
 ** ピッチの変更コマンド **
-`{prefix}pitch <-6.5~6.5>` ピッチを変更します。デフォルトは0です。
+`{prefix}pitch <-6.5~6.5>` ピッチを変更します。デフォルトは0です。引数を渡さなかった場合デフォルトに変更されます。
 
 ** スピードの変更コマンド **
-`{prefix}speed <0.5~4.0>` スピードを変更します。デフォルトは1です。
+`{prefix}speed <0.5~4.0>` スピードを変更します。デフォルトは1です。引数を渡さなかった場合デフォルトに変更されます。
 """
 
 
@@ -69,6 +69,20 @@ async def show_voice_setting(bot, ctx):
     await ctx.send(embed=embed)
 
 
+async def change_pitch(bot, ctx, pitch):
+    document = bot.firestore.user.get(ctx.author.id)
+    data = await document.data()
+    await document.edit(pitch=pitch)
+    await ctx.send(f'{ctx.author.mention}, ピッチを{data.pitch}から{pitch}に変更しました。')
+
+
+async def change_speed(bot, ctx, speed):
+    document = bot.firestore.user.get(ctx.author.id)
+    data = await document.data()
+    await document.edit(speed=speed)
+    await ctx.send(f'{ctx.author.mention}, ピッチを{data.speed}から{speed}に変更しました。')
+
+
 class UserSetting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -90,6 +104,22 @@ class UserSetting(commands.Cog):
             return
 
         await en_setting(self.bot, ctx, voice_type)
+
+    @commands.command()
+    async def pitch(self, ctx, pitch: float = 0.0):
+        if pitch < -6.5 or 6.5 < pitch:
+            await ctx.send('ピッチは-6.5から6.5の間で指定してください。')
+            return
+
+        await change_pitch(self.bot, ctx, pitch)
+
+    @commands.command(aliases=['rate'])
+    async def speed(self, ctx, speed: float = 1.0):
+        if speed < 0.5 or 4.0 < speed:
+            await ctx.send('スピードは0.5から4.0の間で指定してください。')
+            return
+
+        await change_speed(self.bot, ctx, speed)
 
 
 def setup(bot):
