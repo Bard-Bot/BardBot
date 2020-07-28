@@ -12,18 +12,18 @@ class Voice(commands.Cog):
     @commands.command()
     async def join(self, ctx):
         async with ctx.channel.typing():
+
+            # サーバー内で既に利用されていた場合
+            if self.bot.voice_manager.get(ctx.guild.id) is not None:
+                await ctx.send("このサーバー内で既に利用されています。moveコマンドを使用するか、切断してから再度お試しください。")
+                return
+
+            # 実行したユーザーがVCにいない場合
+            if (ctx.author.voice is None) or (ctx.author.voice.channel is None):
+                await ctx.send("ボイスチャンネルに接続した状態で実行してください。")
+                return
+
             try:
-
-                # サーバー内で既に利用されていた場合
-                if self.bot.voice_manager.get(ctx.guild.id) is not None:
-                    await ctx.send("このサーバー内で既に利用されています。moveコマンドを使用するか、切断してから再度お試しください。")
-                    return
-
-                # 実行したユーザーがVCにいない場合
-                if (ctx.author.voice is None) or (ctx.author.voice.channel is None):
-                    await ctx.send("ボイスチャンネルに接続した状態で実行してください。")
-                    return
-
                 voice_channel = ctx.author.voice.channel
                 voice_client = await voice_channel.connect(timeout=5.0)
 
@@ -61,16 +61,17 @@ class Voice(commands.Cog):
     @commands.command()
     async def leave(self, ctx):
         async with ctx.channel.typing():
+
+            server = self.bot.voice_manager.get(ctx.guild.id)
+            if server is None:
+                await ctx.send("このサーバーは接続されていません。")
+                return
+
+            if ctx.author.voice.channel.id != server.send_voice_channel.id:
+                await ctx.send("Botと同じボイスチャンネルで実行してください。")
+                return
+
             try:
-                server = self.bot.voice_manager.get(ctx.guild.id)
-                if server is None:
-                    await ctx.send("このサーバーは接続されていません。")
-                    return
-
-                if ctx.author.voice.channel.id != server.send_voice_channel.id:
-                    await ctx.send("Botと同じボイスチャンネルで実行してください。")
-                    return
-
                 # 処理を終了させる
                 await self.bot.voice_manager.close(ctx.guild.id)
 
@@ -83,19 +84,20 @@ class Voice(commands.Cog):
     async def move(self, ctx):
         """Botを移動させる"""
         async with ctx.channel.typing():
+            server = self.bot.voice_manager.get(ctx.guild.id)
+            if server is None:
+                await ctx.send("このサーバーは接続されていません。")
+                return
+
+            if (ctx.author.voice is None) or (ctx.author.voice.channel is None):
+                await ctx.send("ボイスチャンネルに接続した状態で実行してください。")
+                return
+
+            if ctx.author.voice.channel.id != server.send_voice_channel.id:
+                await ctx.send("Botと同じボイスチャンネルで実行してください。")
+                return
+
             try:
-                server = self.bot.voice_manager.get(ctx.guild.id)
-                if server is None:
-                    await ctx.send("このサーバーは接続されていません。")
-                    return
-
-                if (ctx.author.voice is None) or (ctx.author.voice.channel is None):
-                    await ctx.send("ボイスチャンネルに接続した状態で実行してください。")
-                    return
-
-                if ctx.author.voice.channel.id != server.send_voice_channel.id:
-                    await ctx.send("Botと同じボイスチャンネルで実行してください。")
-                    return
 
                 # VoiceClient.move_toを実行
                 await server.move_voice_channel(ctx.author.voice.channel)
