@@ -14,9 +14,9 @@ class Voice(commands.Cog):
         async with ctx.channel.typing():
             try:
 
-                # サーバーがすでに接続されていた場合
+                # サーバー内で既に利用されていた場合
                 if self.bot.voice_manager.get(ctx.guild.id) is not None:
-                    await ctx.send("このサーバーはすでに接続されています。moveコマンドを使用するか、切断してください。")
+                    await ctx.send("このサーバー内で既に利用されています。moveコマンドを使用するか、切断してから再度お試しください。")
                     return
 
                 # 実行したユーザーがVCにいない場合
