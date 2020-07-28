@@ -32,8 +32,11 @@ class SettingSnapshot:
 
     async def data(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        d = result.to_dict()
+        if d is None:
+            return await self.create()
 
-        return SettingData(result.to_dict()) or await self.create()
+        return SettingData(d)
 
     async def exists(self):
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
@@ -55,11 +58,11 @@ class SettingSnapshot:
 
     async def edit(self, name=None, emoji=None, bot=None, limit=None, keep=None):
         data = await self.data()
-        name = name if name is not None else data['name']
-        emoji = emoji if emoji is not None else data['emoji']
-        bot = bot if bot is not None else data['bot']
-        limit = limit if limit is not None else data['limit']
-        keep = keep if keep is not None else data['keep']
+        name = name if name is not None else data.name
+        emoji = emoji if emoji is not None else data.emoji
+        bot = bot if bot is not None else data.bot
+        limit = limit if limit is not None else data.limit
+        keep = keep if keep is not None else data.keep
 
         payload = dict(name=name, emoji=emoji, bot=bot, limit=limit, keep=keep)
 
