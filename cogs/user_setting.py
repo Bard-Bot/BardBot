@@ -1,18 +1,27 @@
 from discord.ext import commands
 import discord
+JA_VOICE_TYPES = "ABCD"
+EN_VOICE_TYPES = "ABCDEF"
 
 
 how_to_change = """
 ** 音声種類の変更コマンド **
-`::voice [A, B, C, D]` で、日本語の音声設定を変更できます。
-`::voice en [A, B, C, D]` で、英語の音声設定を変更できます。
+`{prefix}voice [{ja}]` 日本語の音声設定を変更します。デフォルトはAです。
+`{prefix}voice en [{en}]` 英語の音声設定を変更します。デフォルトはAです。
 
 ** ピッチの変更コマンド **
-`::pitch <-6.5~6.5>` ピッチを変更します。デフォルトは0です。
+`{prefix}pitch <-6.5~6.5>` ピッチを変更します。デフォルトは0です。
 
 ** スピードの変更コマンド **
-`::speed <0.5~4.0>` スピードを変更します。デフォルトは1です。
+`{prefix}speed <0.5~4.0>` スピードを変更します。デフォルトは1です。
 """
+
+
+def get_types_text(types, with_lower=True):
+    if with_lower:
+        return f"{', '.join(t.lower() for t in types)}, {', '.join(t for t in types)}"
+
+    return f"{', '.join(t for t in types)}"
 
 
 async def edit_voice_type(bot, ctx, language, voice_type):
@@ -24,16 +33,16 @@ async def edit_voice_type(bot, ctx, language, voice_type):
 
 
 async def en_setting(bot, ctx, voice_type):
-    if voice_type not in ("a", "b", "c", "d", "A", "B", "C", "D"):
-        await ctx.send("ボイスの設定はA,B,C,Dから選んでください。")
+    if voice_type.upper() not in EN_VOICE_TYPES:
+        await ctx.send(f"ボイスの設定は`{get_types_text(EN_VOICE_TYPES)}`から選んでください。")
         return
 
     await edit_voice_type(bot, ctx, 'en', voice_type.upper())
 
 
 async def ja_setting(bot, ctx, voice_type):
-    if voice_type not in ("a", "b", "c", "d", "A", "B", "C", "D"):
-        await ctx.send("ボイスの設定はA,B,C,Dから選んでください。")
+    if voice_type.upper() not in JA_VOICE_TYPES:
+        await ctx.send(f"ボイスの設定は`{get_types_text(JA_VOICE_TYPES)}`から選んでください。")
         return
 
     await edit_voice_type(bot, ctx, 'ja', voice_type.upper())
@@ -52,7 +61,10 @@ async def show_voice_setting(bot, ctx):
                           f"ピッチ: {data.pitch}\n"
                           f"スピード: {data.speed}"
                     )
-    embed.add_field(name='設定コマンド', value=how_to_change)
+    embed.add_field(name='設定コマンド',
+                    value=how_to_change.format(prefix=ctx.prefix,
+                                               ja=get_types_text(JA_VOICE_TYPES, False),
+                                               en=get_types_text(EN_VOICE_TYPES, False)))
 
     await ctx.send(embed=embed)
 
