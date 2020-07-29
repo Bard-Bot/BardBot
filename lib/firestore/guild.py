@@ -48,7 +48,7 @@ class GuildSnapshot:
         return GuildData(payload)
 
     async def spend_char(self, count):
-        """成功した場合はTrue、文字数が足りなかった場合はNoneを返す"""
+        """使用可能文字数を減らす"""
         await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': Increment(-count)}, merge=True))
 
 
