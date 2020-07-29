@@ -14,6 +14,9 @@ class GuildData:
     def subscribe(self):
         return self.data['subscribe']
 
+    def is_spendable(self, count):
+        return self.count - count >= 0
+
 
 class GuildSnapshot:
     def __init__(self, document, guild):
@@ -32,6 +35,9 @@ class GuildSnapshot:
 
         return result.exists
 
+    async def set(self, count):
+        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': count}, merge=True))
+
     async def create(self):
         """TODO: GuildにBotが入った時に実行する"""
         if await self.exists():
@@ -42,13 +48,8 @@ class GuildSnapshot:
         return GuildData(payload)
 
     async def spend_char(self, count):
-        """成功した場合はTrue、文字数が足りなかった場合はNoneを返す"""
-        guild = await self.data()
-        if guild.count - count > 0:
-            await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': Increment(-count)}, merge=True))
-            return True
-
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': 0}, merge=True))
+        """使用可能文字数を減らす"""
+        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': Increment(-count)}, merge=True))
 
 
 class Guild:
