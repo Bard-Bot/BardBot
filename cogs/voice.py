@@ -81,6 +81,19 @@ class Voice(commands.Cog):
                 sentry_sdk.capture_exception(e)
 
     @commands.command()
+    async def fleave(self, ctx):
+        """強制的に終了させる"""
+        server = self.bot.voice_manager.get(ctx.guild.id)
+        if server is None:
+            for client in self.bot.voice_clients:
+                if client.guild.id == ctx.guild.id:
+                    await client.disconnect()
+        else:
+            await self.bot.voice_manager.close(ctx.guild.id)
+
+        await ctx.send('処理が完了しました。')
+
+    @commands.command()
     async def move(self, ctx):
         """Botを移動させる"""
         async with ctx.channel.typing():
