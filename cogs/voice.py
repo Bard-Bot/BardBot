@@ -121,7 +121,7 @@ class Voice(commands.Cog):
         exception = getattr(exception, 'original', exception)
 
         if isinstance(exception, discord.ClientException):
-            await ctx.send("失敗しました。もう一度実行してください。人数が埋まっているなどの理由が考えられます。")    
+            await ctx.send("失敗しました。もう一度実行してください。人数が埋まっているなどの理由が考えられます。")
         else:
             await ctx.send('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。')
             sentry_sdk.capture_exception(exception)
