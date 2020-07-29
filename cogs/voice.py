@@ -79,7 +79,7 @@ class Voice(commands.Cog):
             await self.bot.voice_manager.close(ctx.guild.id)
 
     @leave.error
-    def leave_error(self, ctx, exception):
+    async def leave_error(self, ctx, exception):
         await ctx.send('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。')
         sentry_sdk.capture_exception(exception)
 
