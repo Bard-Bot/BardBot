@@ -65,13 +65,16 @@ async def show_voice_setting(bot, ctx):
                     value=f"日本語のボイスの種類: {data.voice['ja']}\n"
                           f"英語のボイスの種類: {data.voice['en']}\n"
                           f"ピッチ: {data.pitch}\n"
-                          f"スピード: {data.speed}"
+                          f"スピード: {data.speed}",
+                    inline=False
                     )
     embed.add_field(name='設定コマンド',
                     value=how_to_change.format(prefix=ctx.prefix,
                                                ja=get_types_text(
                                                    JA_VOICE_TYPES, False),
-                                               en=get_types_text(EN_VOICE_TYPES, False)))
+                                               en=get_types_text(EN_VOICE_TYPES, False)),
+                    inline=False
+                    )
 
     await ctx.send(embed=embed)
 

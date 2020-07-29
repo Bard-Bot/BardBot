@@ -35,7 +35,7 @@ class GuildSetting(commands.Cog):
         embed.add_field(name='Botのメッセージ', value=t_or_f(data.bot), inline=False)
         embed.add_field(name='再接続', value='する' if data.keep else 'しない', inline=False)
         embed.add_field(name='読み上げ上限', value=f'{data.limit}文字', inline=False)
-        embed.add_field(name='設定コマンド', value=how_to_change.format(prefix=ctx.prefix))
+        embed.add_field(name='設定コマンド', value=how_to_change.format(prefix=ctx.prefix), inline=False)
 
         await ctx.send(embed=embed)
 
