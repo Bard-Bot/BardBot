@@ -17,6 +17,7 @@ extensions = [
     'cogs.reload',
     'cogs.user_setting',
     'cogs.guild_setting',
+    'cogs.voice',
 ]
 
 for extension in extensions:

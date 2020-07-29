@@ -12,6 +12,7 @@ class Voice(commands.Cog):
     @commands.command()
     async def join(self, ctx):
         async with ctx.channel.typing():
+            raise Exception('haha w')
 
             # サーバー内で既に利用されていた場合
             if self.bot.voice_manager.get(ctx.guild.id) is not None:
@@ -23,40 +24,43 @@ class Voice(commands.Cog):
                 await ctx.send("ボイスチャンネルに接続した状態で実行してください。")
                 return
 
+            voice_channel = ctx.author.voice.channel
+            voice_client = await voice_channel.connect(timeout=5.0)
+
+            # 残り文字数が足りているか
+            data = await self.bot.firestore.guild.get(ctx.guild.id).data()
+            if data.count == 0:
+                await ctx.send("今月の利用可能文字数を超えています。\n"
+                               "まだご利用になりたい場合は、公式サイトより購入してください。")
+                return
+
+            # ボイスサーバーの作成
+            server = VoiceServer(self.bot, voice_channel, ctx.channel, voice_client)
+            await server.setup()
+
+            self.bot.voice_manager.set(ctx.guild.id, server)
+
+            await ctx.send("接続しました。")
+
             try:
-                voice_channel = ctx.author.voice.channel
-                voice_client = await voice_channel.connect(timeout=5.0)
+                # 多くのbotがやってるからつけてみた
+                await ctx.guild.me.edit(deafen=True)
+            except Exception:
+                pass
 
-                # 残り文字数が足りているか
-                data = await self.bot.firestore.guild.get(ctx.guild.id).data()
-                if data.count == 0:
-                    await ctx.send("今月の利用可能文字数を超えています。\n"
-                                   "まだご利用になりたい場合は、公式サイトより購入してください。")
-                    return
+    @join.error
+    async def join_error(self, ctx, exception):
+        exception = getattr(exception, 'original', exception)
 
-                # ボイスサーバーの作成
-                server = VoiceServer(self.bot, voice_channel, ctx.channel, voice_client)
-                await server.setup()
+        if isinstance(exception, discord.ClientException):
+            await ctx.send("このサーバーはすでに接続されています。moveコマンドを使用するか、切断してください。")
 
-                self.bot.voice_manager.set(ctx.guild.id, server)
+        elif isinstance(exception, asyncio.TimeoutError):
+            await ctx.send('接続できませんでした。ユーザー数が埋まっている可能性があります。再度接続してください。')
 
-                await ctx.send("接続しました。")
-
-                try:
-                    # 多くのbotがやってるからつけてみた
-                    await ctx.guild.me.edit(deafen=True)
-                except Exception:
-                    pass
-
-            except discord.ClientException:
-                await ctx.send("このサーバーはすでに接続されています。moveコマンドを使用するか、切断してください。")
-
-            except asyncio.exceptions.TimeoutError:
-                await ctx.send('接続できませんでした。ユーザー数が埋まっている可能性があります。再度接続してください。')
-
-            except Exception as e:
-                await ctx.send('予期せぬエラーが発生しました。再度接続してください。エラー内容は運営に送信されます。')
-                sentry_sdk.capture_exception(e)
+        else:
+            await ctx.send('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。')
+            sentry_sdk.capture_exception(exception)
 
     @commands.command()
     async def leave(self, ctx):
@@ -71,14 +75,13 @@ class Voice(commands.Cog):
                 await ctx.send("Botと同じボイスチャンネルで実行してください。")
                 return
 
-            try:
-                # 処理を終了させる
-                await self.bot.voice_manager.close(ctx.guild.id)
+            # 処理を終了させる
+            await self.bot.voice_manager.close(ctx.guild.id)
 
-            except Exception as e:
-                self.bot.voice_manager.delete(ctx.guild.id)
-                await ctx.send('予期せぬエラーが発生しました。再度接続してください。エラー内容は運営に送信されます。')
-                sentry_sdk.capture_exception(e)
+    @leave.error
+    def leave_error(self, ctx, exception):
+        await ctx.send('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。')
+        sentry_sdk.capture_exception(exception)
 
     @commands.command()
     async def fleave(self, ctx):
@@ -110,18 +113,18 @@ class Voice(commands.Cog):
                 await ctx.send("Botと同じボイスチャンネルで実行してください。")
                 return
 
-            try:
+            # VoiceClient.move_toを実行
+            await server.move_voice_channel(ctx.author.voice.channel)
 
-                # VoiceClient.move_toを実行
-                await server.move_voice_channel(ctx.author.voice.channel)
+    @move.error
+    async def move_error(self, ctx, exception):
+        exception = getattr(exception, 'original', exception)
 
-            except discord.ClientException:
-                await ctx.send("失敗しました。もう一度実行してください。人数が埋まっているなどの理由が考えられます。")
-                return
-
-            except Exception as e:
-                await ctx.send('予期せぬエラーが発生しました。再度接続してください。エラー内容は運営に送信されます。')
-                sentry_sdk.capture_exception(e)
+        if isinstance(exception, discord.ClientException):
+            await ctx.send("失敗しました。もう一度実行してください。人数が埋まっているなどの理由が考えられます。")    
+        else:
+            await ctx.send('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。')
+            sentry_sdk.capture_exception(exception)
 
 
 def setup(bot):
