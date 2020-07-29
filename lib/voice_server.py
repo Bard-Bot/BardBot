@@ -7,10 +7,14 @@ import re
 import sentry_sdk
 import aiohttp
 LANGUAGE_COMPILE = re.compile(r'([a-zA-Z]{2})::(.+)')
-LANGUAGES = [
-    'ja',
-    'en',
-]
+LANGUAGES = {
+    'ja': 'ja-JP',
+    'en': 'en-US',
+}
+
+
+def convert_voice_name(language, name):
+    return f'{language}-Wavenet-{name}'
 
 
 class VoiceData:
@@ -29,7 +33,9 @@ class VoiceData:
         if match := LANGUAGE_COMPILE.match(self._text):
             groups = match.groups()
             self._text = groups[1]
-            self.language = groups[0] if groups[0] in LANGUAGES else 'ja'
+            self.language = groups[0] if groups[0] in LANGUAGES.keys() else 'ja'
+        else:
+            self.language = 'ja'
 
     @property
     def text(self):
@@ -38,14 +44,15 @@ class VoiceData:
     async def source(self, session):
         data = await fetch_voice_data(
             session=session,
-            token=self.google_cloud_token,
+            token=self.bot.google_cloud_token,
             text=self.text,
-            language_code=self.language,
-            name=self.voice_setting.voice[self.language],
+            language_code=LANGUAGES[self.language],
+            name=convert_voice_name(LANGUAGES[self.language], self.voice_setting.voice[self.language]),
             rate=self.voice_setting.speed,
             pitch=self.voice_setting.pitch,
         )
-        return discord.PCMAudio(io.BytesIO(audioop.tostereo(data, 2, 1, 1)))
+        source = discord.PCMAudio(io.BytesIO(audioop.tostereo(data, 2, 1, 1)))
+        return discord.PCMVolumeTransformer(source, volume=0.4)
 
     def set_name(self, last_author_id):
         if not self.guild_setting.name:
@@ -53,7 +60,7 @@ class VoiceData:
         if self.message.author.id == last_author_id:
             return self
         name = self.message.author.nick or self.message.author.name
-        self._text = name + ('、' if self.language == 'ja' else ',')
+        self._text = name + ('、' if self.language == 'ja' else ',') + self._text
 
         return self
 
@@ -90,6 +97,11 @@ class VoiceData:
         for key, value in self.guild_dict.items():
             self._text = self._text.replace(key, value)
         return self
+
+    async def is_spendable(self):
+        document = self.bot.firestore.guild.get(self.message.guild.id)
+        data = await document.data()
+        return data.is_spendable(len(self.text))
 
     async def spend_char(self):
         r = await self.bot.firestore.guild.get(self.message.guild.id).spend_char(len(self.text))
@@ -144,22 +156,25 @@ class VoiceServer:
                 item.convert_w().convert_url().convert_emoji().set_name(
                     self.last_author_id).convert_guild_dict().set_text_length()
 
-                if not await item.spend_char():
+                if not await item.is_spendable():
                     await self.close("申し訳ございません。今月の利用可能文字数を超えてしまいました。\n"
                                      "まだご利用になりたい場合は、公式サイト( https://bardbot.net )より購入してください。")
                     return
+                await item.spend_char()
 
                 while self.voice_client.is_playing():
                     await asyncio.sleep(0.5, loop=self.bot.loop)
                 await asyncio.sleep(0.2, loop=self.bot.loop)
 
                 self.voice_client.play(await item.source(self.session))
+                self.last_author_id = item.message.author.id
 
         except asyncio.CancelledError:
             pass
 
-        except audioop.error:
+        except audioop.error as e:
             await self.close("内部エラーが発生しました。再接続してください。")
+            sentry_sdk.capture_exception(e)
 
         except Exception as e:
             sentry_sdk.capture_exception(e)

@@ -58,6 +58,7 @@ class BardBot(commands.Bot):
         # guild and user settings dict
         self.guild_settings = Storage()
         self.user_settings = Storage()
+        self.guild_dicts = Storage()
 
     async def on_command_error(self, context, exception):
 

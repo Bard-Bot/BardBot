@@ -18,6 +18,7 @@ extensions = [
     'cogs.user_setting',
     'cogs.guild_setting',
     'cogs.voice',
+    'cogs.text_to_speech',
 ]
 
 for extension in extensions:

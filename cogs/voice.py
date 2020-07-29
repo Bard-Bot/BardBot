@@ -12,8 +12,6 @@ class Voice(commands.Cog):
     @commands.command()
     async def join(self, ctx):
         async with ctx.channel.typing():
-            raise Exception('haha w')
-
             # サーバー内で既に利用されていた場合
             if self.bot.voice_manager.get(ctx.guild.id) is not None:
                 await ctx.send("このサーバー内で既に利用されています。moveコマンドを使用するか、切断してから再度お試しください。")
