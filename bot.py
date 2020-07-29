@@ -41,6 +41,10 @@ class BardBot(commands.Bot):
         self.voice_manager = VoiceManager(self)
 
     async def on_command_error(self, context, exception):
+
+        # ignore command.error
+        if hasattr(context.command, 'on_error'):
+            return
         if isinstance(exception, commands.CommandNotFound):
             return
         if isinstance(exception, commands.CommandOnCooldown):
