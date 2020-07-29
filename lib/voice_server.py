@@ -6,17 +6,30 @@ import audioop
 import re
 import sentry_sdk
 import aiohttp
+LANGUAGE_COMPILE = re.compile(r'([a-zA-Z]{2})::(.+)')
+LANGUAGES = [
+    'ja',
+    'en',
+]
 
 
 class VoiceData:
-    def __init__(self, bot, message, text, guild_setting, voice_setting, guild_dict, language):
+    def __init__(self, bot, message, text, guild_setting, voice_setting, guild_dict):
         self.bot = bot
         self.message = message
         self._text = text
         self.guild_setting = guild_setting
         self.voice_setting = voice_setting
         self.guild_dict = guild_dict
-        self.language = language
+        self.language = None
+
+        self.set_language()
+
+    def set_language(self):
+        if match := LANGUAGE_COMPILE.match(self._text):
+            groups = match.groups()
+            self._text = groups[1]
+            self.language = groups[0] if groups[0] in LANGUAGES else 'ja'
 
     @property
     def text(self):
