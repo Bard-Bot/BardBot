@@ -17,6 +17,12 @@ how_to_change = """
 """
 
 
+async def refresh(self, ctx, document):
+    self.bot.guild_settings.set(ctx.author.id,
+                                await document.data()
+                                )
+
+
 def get_types_text(types, with_lower=True):
     if with_lower:
         return f"{', '.join(t.lower() for t in types)}, {', '.join(t for t in types)}"
@@ -28,7 +34,7 @@ async def edit_voice_type(bot, ctx, language, voice_type):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(voice={language: voice_type})
-
+    await refresh(ctx, document)
     await ctx.send(f'{ctx.author.mention}, {language}のボイスの設定を{data.voice[language]}から{voice_type}に変更しました。')
 
 
@@ -73,6 +79,7 @@ async def change_pitch(bot, ctx, pitch):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(pitch=pitch)
+    await refresh(ctx, document)
     await ctx.send(f'{ctx.author.mention}, ピッチを{data.pitch}から{pitch}に変更しました。')
 
 
@@ -80,6 +87,7 @@ async def change_speed(bot, ctx, speed):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(speed=speed)
+    await refresh(ctx, document)
     await ctx.send(f'{ctx.author.mention}, ピッチを{data.speed}から{speed}に変更しました。')
 
 
