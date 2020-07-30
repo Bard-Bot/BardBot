@@ -12,8 +12,7 @@ class GuildDictSnapshot:
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
         d = result.to_dict()
         if d is None:
-            await self.add('bard', 'バード')
-            return {'bard': 'バード'}
+            return {}
 
         return d
 

@@ -1,6 +1,5 @@
 from discord.ext import commands
 import discord
-from lib import color
 JA_VOICE_TYPES = "ABCD"
 EN_VOICE_TYPES = "ABCDEF"
 
@@ -60,7 +59,7 @@ async def show_voice_setting(bot, ctx):
     data = await document.data()
     embed = discord.Embed(
         title=f'{ctx.author}の音声設定',
-        color=color.default
+        color=discord.Color.from_rgb(25, 118, 210)
     )
     embed.add_field(name="音声設定",
                     value=f"日本語のボイスの種類: {data.voice['ja']}\n"
