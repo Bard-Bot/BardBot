@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+from lib import color
 
 
 def t_or_f(t):
@@ -29,7 +30,7 @@ class GuildSetting(commands.Cog):
         """ギルドの設定を表示"""
         data = await self.bot.firestore.setting.get(ctx.guild.id).data()
         embed = discord.Embed(title=f"{ctx.guild.name} のサーバー設定",
-                              color=discord.Color.from_rgb(25, 118, 210))
+                              color=color.default)
         embed.add_field(name='ユーザーの名前', value=t_or_f(data.name), inline=False)
         embed.add_field(name='絵文字', value=t_or_f(data.emoji), inline=False)
         embed.add_field(name='Botのメッセージ', value=t_or_f(data.bot), inline=False)
