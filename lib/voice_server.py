@@ -93,7 +93,7 @@ class VoiceData:
         return self
 
     def convert_md(self):
-        self._text = re.sub(r'||.+||', r'', self._text)
+        self._text = re.sub(r'||.+||', ',', self._text)
         self._text = re.sub(r'~~(.+)~~', r'\1')
         self._text = re.sub(r'__(.+)__', r'\1')
         self._text = re.sub(r'_(.+)_', r'\1')
