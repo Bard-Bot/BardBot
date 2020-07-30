@@ -6,6 +6,7 @@ import audioop
 import re
 import sentry_sdk
 import aiohttp
+import emoji_data_python
 LANGUAGE_COMPILE = re.compile(r'([a-zA-Z]{2})::(.+)')
 LANGUAGES = {
     'ja': 'ja-JP',
@@ -66,8 +67,15 @@ class VoiceData:
 
     def convert_emoji(self):
         if not self.guild_setting.emoji:
+            self._text = re.sub(r"<:(.{1,32}):[0-9]{17,18}>", r"", self._text)
+
+            emojis = emoji_data_python.get_emoji_regex().findall(self._text)
+            for emoji in emojis:
+                self._text = self._text.replace(emoji, '')
+
             return self
-        self._text = re.sub(r"<:(.{1,32}):[0-9]{18}>", r"\1", self._text)
+        self._text = re.sub(r"<:(.{1,32}):[0-9]{17,18}>", r"\1", self._text)
+
         return self
 
     def convert_w(self):
