@@ -19,7 +19,6 @@ extensions = [
     'cogs.guild_setting',
     'cogs.voice',
     'cogs.text_to_speech',
-    'cogs.guild_dict',
 ]
 
 for extension in extensions:
