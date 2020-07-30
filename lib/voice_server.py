@@ -45,7 +45,6 @@ class VoiceData:
         return self._text
 
     async def source(self, session):
-        print(self.text)
         data = await fetch_voice_data(
             session=session,
             token=self.bot.google_cloud_token,
@@ -78,7 +77,6 @@ class VoiceData:
 
             return self
         self._text = re.sub(r"<a?:(.{1,32}):[0-9]{17,18}>", r"\1", self._text)
-        print(self.text)
 
         return self
 
