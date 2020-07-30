@@ -1,6 +1,7 @@
 from discord.ext import commands
 import discord
 from lib import color
+from lib.embed import success_embed, error_embed, set_meta
 
 
 def t_or_f(t):
@@ -38,7 +39,7 @@ class GuildSetting(commands.Cog):
         embed.add_field(name='読み上げ上限', value=f'{data.limit}文字', inline=False)
         embed.add_field(name='設定コマンド', value=how_to_change.format(prefix=ctx.prefix), inline=False)
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=set_meta(embed, ctx))
 
     @pref.command()
     async def name(self, ctx):
@@ -47,7 +48,7 @@ class GuildSetting(commands.Cog):
         await document.edit(name=not data.name)
         await self.refresh(ctx, document)
         await ctx.send(
-            f'{ctx.author.mention}, 名前を `{t_or_f(data.name)}` から `{t_or_f(not data.name)}` に変更しました。'
+            embed=success_embed(f'名前を `{t_or_f(data.name)}` から `{t_or_f(not data.name)}` に変更しました。', ctx)
         )
 
     @pref.command()
@@ -57,7 +58,7 @@ class GuildSetting(commands.Cog):
         await document.edit(emoji=not data.emoji)
         await self.refresh(ctx, document)
         await ctx.send(
-            f'{ctx.author.mention}, 絵文字を `{t_or_f(data.emoji)}` から `{t_or_f(not data.emoji)}` に変更しました。'
+            embed=success_embed(f'絵文字を `{t_or_f(data.emoji)}` から `{t_or_f(not data.emoji)}` に変更しました。', ctx)
         )
 
     @pref.command()
@@ -67,19 +68,19 @@ class GuildSetting(commands.Cog):
         await document.edit(emoji=not data.bot)
         await self.refresh(ctx, document)
         await ctx.send(
-            f'{ctx.author.mention}, Botのメッセージを `{t_or_f(data.bot)}` から `{t_or_f(not data.bot)}` に変更しました。'
+            embed=success_embed(f'Botのメッセージを `{t_or_f(data.bot)}` から `{t_or_f(not data.bot)}` に変更しました。', ctx)
         )
 
     @pref.command()
     async def limit(self, ctx, limit=100):
         if limit <= 0 or 2000 < limit:
-            await ctx.send('文字数は1から2000の間で指定してください。')
+            await ctx.send(embed=error_embed('文字数は1から2000の間で指定してください。', ctx))
             return
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(limit=limit)
         await self.refresh(ctx, document)
-        await ctx.send(f'{ctx.author.mention}, 文字数制限を`{data.limit}`文字から`{limit}`文字に変更しました。')
+        await ctx.send(embed=success_embed(f'文字数制限を`{data.limit}`文字から`{limit}`文字に変更しました。', ctx))
 
     @pref.command()
     async def keep(self, ctx):
@@ -90,7 +91,7 @@ class GuildSetting(commands.Cog):
         a = '再接続する' if (not data.keep) else '再接続しない'
         await self.refresh(ctx, document)
         await ctx.send(
-            f'{ctx.author.mention}, 接続が切られても `{b}` から `{a}` に変更しました。'
+            embed=success_embed(f'接続が切られても `{b}` から `{a}` に変更しました。', ctx)
         )
 
 

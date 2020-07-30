@@ -1,6 +1,7 @@
 from discord.ext import commands
 import numpy as np
 from lib import color
+from lib.embed import error_embed, success_embed
 import discord
 import asyncio
 
@@ -84,17 +85,18 @@ class GuildDict(commands.Cog):
         await document.add(key, value)
 
         self.bot.guild_dicts.set(ctx.guild.id, await document.data())
-        await ctx.send(f'{ctx.author.mention}, {key}を{value}として登録しました。')
+        await ctx.send(embed=success_embed(f'{key}を{value}として登録しました。', ctx))
 
     @word.command(aliases=['delete', 'del', 'pop'])
     async def remove(self, ctx, *, key):
         document = self.bot.firestore.dict.get(ctx.guild.id)
         if not await document.remove(key):
-            await ctx.send(f'{ctx.author.mention}, {key}は存在しません。')
+
+            await ctx.send(embed=error_embed(f'{key}は存在しません。', ctx))
             return
 
         self.bot.guild_dicts.set(ctx.guild.id, await document.data())
-        await ctx.send(f'{ctx.author.mention}, {key}を削除しました。')
+        await ctx.send(embed=success_embed(f'{key}を削除しました。', ctx))
 
 
 def setup(bot):

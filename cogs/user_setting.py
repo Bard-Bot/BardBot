@@ -1,6 +1,7 @@
 from discord.ext import commands
 import discord
 from lib import color
+from lib.embed import set_meta, success_embed, error_embed
 JA_VOICE_TYPES = "ABCD"
 EN_VOICE_TYPES = "ABCDEF"
 
@@ -36,12 +37,12 @@ async def edit_voice_type(bot, ctx, language, voice_type):
     data = await document.data()
     await document.edit(voice={language: voice_type})
     await refresh(bot, ctx, document)
-    await ctx.send(f'{ctx.author.mention}, {language}のボイスの設定を{data.voice[language]}から{voice_type}に変更しました。')
+    await ctx.send(embed=success_embed(f'{language}のボイスの設定を{data.voice[language]}から{voice_type}に変更しました。', ctx))
 
 
 async def en_setting(bot, ctx, voice_type):
     if voice_type.upper() not in EN_VOICE_TYPES:
-        await ctx.send(f"ボイスの設定は`{get_types_text(EN_VOICE_TYPES)}`から選んでください。")
+        await ctx.send(embed=error_embed(f"ボイスの設定は`{get_types_text(EN_VOICE_TYPES)}`から選んでください。", ctx))
         return
 
     await edit_voice_type(bot, ctx, 'en', voice_type.upper())
@@ -49,7 +50,7 @@ async def en_setting(bot, ctx, voice_type):
 
 async def ja_setting(bot, ctx, voice_type):
     if voice_type.upper() not in JA_VOICE_TYPES:
-        await ctx.send(f"ボイスの設定は`{get_types_text(JA_VOICE_TYPES)}`から選んでください。")
+        await ctx.send(embed=error_embed(f"ボイスの設定は`{get_types_text(JA_VOICE_TYPES)}`から選んでください。", ctx))
         return
 
     await edit_voice_type(bot, ctx, 'ja', voice_type.upper())
@@ -77,7 +78,7 @@ async def show_voice_setting(bot, ctx):
                     inline=False
                     )
 
-    await ctx.send(embed=embed)
+    await ctx.send(embed=set_meta(embed, ctx))
 
 
 async def change_pitch(bot, ctx, pitch):
@@ -85,7 +86,7 @@ async def change_pitch(bot, ctx, pitch):
     data = await document.data()
     await document.edit(pitch=pitch)
     await refresh(bot, ctx, document)
-    await ctx.send(f'{ctx.author.mention}, ピッチを{data.pitch}から{pitch}に変更しました。')
+    await ctx.send(embed=success_embed(f'ピッチを{data.pitch}から{pitch}に変更しました。', ctx))
 
 
 async def change_speed(bot, ctx, speed):
@@ -93,7 +94,7 @@ async def change_speed(bot, ctx, speed):
     data = await document.data()
     await document.edit(speed=speed)
     await refresh(bot, ctx, document)
-    await ctx.send(f'{ctx.author.mention}, ピッチを{data.speed}から{speed}に変更しました。')
+    await ctx.send(embed=success_embed(f'ピッチを{data.speed}から{speed}に変更しました。', ctx))
 
 
 class UserSetting(commands.Cog):
@@ -121,7 +122,7 @@ class UserSetting(commands.Cog):
     @commands.command()
     async def pitch(self, ctx, pitch: float = 0.0):
         if pitch < -6.5 or 6.5 < pitch:
-            await ctx.send('ピッチは-6.5から6.5の間で指定してください。')
+            await ctx.send(embed=error_embed('ピッチは-6.5から6.5の間で指定してください。', ctx))
             return
 
         await change_pitch(self.bot, ctx, pitch)
@@ -129,7 +130,7 @@ class UserSetting(commands.Cog):
     @commands.command(aliases=['rate'])
     async def speed(self, ctx, speed: float = 1.0):
         if speed < 0.5 or 4.0 < speed:
-            await ctx.send('スピードは0.5から4.0の間で指定してください。')
+            await ctx.send(embed=error_embed('スピードは0.5から4.0の間で指定してください。', ctx))
             return
 
         await change_speed(self.bot, ctx, speed)

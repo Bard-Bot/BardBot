@@ -7,6 +7,7 @@ import re
 import sentry_sdk
 import aiohttp
 import emoji_data_python
+from lib.embed import error_embed, success_embed
 LANGUAGE_COMPILE = re.compile(r'([a-zA-Z]{2})::(.+)')
 LANGUAGES = {
     'ja': 'ja-JP',
@@ -136,12 +137,15 @@ class VoiceServer:
     async def put(self, item):
         await self.queue.put(item)
 
-    async def close(self, text="読み上げを終了します。"):
+    async def close(self, text="読み上げを終了します。", error=False):
         self.voice_client.stop()
         await self.session.close()
         await self.voice_client.disconnect(force=True)
         self.task.cancel()
-        await self.read_text_channel.send(text)
+        if error:
+            await self.read_text_channel.send(embed=error_embed(text))
+        else:
+            await self.read_text_channel.send(embed=success_embed(text))
 
     async def move_voice_channel(self, new_voice_channel):
         self.voice_client.stop()
@@ -166,7 +170,7 @@ class VoiceServer:
 
                 if not await item.is_spendable():
                     await self.close("申し訳ございません。今月の利用可能文字数を超えてしまいました。\n"
-                                     "まだご利用になりたい場合は、公式サイト( https://bardbot.net )より購入してください。")
+                                     "まだご利用になりたい場合は、公式サイト( https://bardbot.net )より購入してください。", error=True)
                     return
                 await item.spend_char()
 
@@ -181,9 +185,9 @@ class VoiceServer:
             pass
 
         except audioop.error as e:
-            await self.close("内部エラーが発生しました。再接続してください。")
+            await self.close("内部エラーが発生しました。再接続してください。", error=True)
             sentry_sdk.capture_exception(e)
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            await self.close("内部エラーが発生しました。再接続してください。")
+            await self.close("内部エラーが発生しました。再接続してください。", error=True)
