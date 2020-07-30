@@ -94,7 +94,7 @@ class VoiceData:
 
     def convert_url(self):
         url_text = "URL省略、" if self.language == "ja" else "URL,"
-        self._text = re.sub(r"https?://[\w!?/+\-_~;.,=*&@#$%()'\[\]]+", url_text, self._text)
+        self._text = re.sub(r"https?://[\w!\?/\+\-_~=;\.,\*&@#\$%\(\)'\[\]]+", url_text, self._text)
         return self
 
     def set_text_length(self):
