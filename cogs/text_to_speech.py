@@ -17,14 +17,14 @@ class TextToSpeech(commands.Cog):
     async def set_guild_setting(self, guild_id):
         document = self.bot.firestore.setting.get(guild_id)
         data = await document.data()
-        self.bot.user_settings.set(guild_id, data)
+        self.bot.guild_settings.set(guild_id, data)
 
         return data
 
     async def set_guild_dict(self, guild_id):
         document = self.bot.firestore.dict.get(guild_id)
         data = await document.data()
-        self.bot.user_settings.set(guild_id, data)
+        self.bot.guild_dicts.set(guild_id, data)
 
         return data
 

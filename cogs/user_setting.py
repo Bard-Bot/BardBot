@@ -19,12 +19,6 @@ how_to_change = """
 """
 
 
-async def refresh(bot, ctx, document):
-    bot.guild_settings.set(ctx.author.id,
-                           await document.data()
-                           )
-
-
 def get_types_text(types, with_lower=True):
     if with_lower:
         return f"{', '.join(t.lower() for t in types)}, {', '.join(t for t in types)}"
@@ -36,7 +30,6 @@ async def edit_voice_type(bot, ctx, language, voice_type):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(voice={language: voice_type})
-    await refresh(bot, ctx, document)
     await ctx.send(embed=success_embed(f'{language}のボイスの設定を{data.voice[language]}から{voice_type}に変更しました。', ctx))
 
 
@@ -85,7 +78,6 @@ async def change_pitch(bot, ctx, pitch):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(pitch=pitch)
-    await refresh(bot, ctx, document)
     await ctx.send(embed=success_embed(f'ピッチを{data.pitch}から{pitch}に変更しました。', ctx))
 
 
@@ -93,13 +85,18 @@ async def change_speed(bot, ctx, speed):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(speed=speed)
-    await refresh(bot, ctx, document)
     await ctx.send(embed=success_embed(f'ピッチを{data.speed}から{speed}に変更しました。', ctx))
 
 
 class UserSetting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    async def refresh(self, ctx):
+        document = self.bot.firestore.user.get(ctx.author.id)
+        self.bot.user_settings.set(ctx.author.id,
+                                   await document.data()
+                                   )
 
     @commands.group(invoke_without_command=True)
     async def voice(self, ctx, voice_type=None):
@@ -109,6 +106,7 @@ class UserSetting(commands.Cog):
             return
 
         await ja_setting(self.bot, ctx, voice_type)
+        await self.refresh(ctx)
 
     @voice.command()
     async def en(self, ctx, voice_type=None):
@@ -118,6 +116,7 @@ class UserSetting(commands.Cog):
             return
 
         await en_setting(self.bot, ctx, voice_type)
+        await self.refresh(ctx)
 
     @commands.command()
     async def pitch(self, ctx, pitch: float = 0.0):
@@ -126,6 +125,7 @@ class UserSetting(commands.Cog):
             return
 
         await change_pitch(self.bot, ctx, pitch)
+        await self.refresh(ctx)
 
     @commands.command(aliases=['rate'])
     async def speed(self, ctx, speed: float = 1.0):
@@ -134,6 +134,7 @@ class UserSetting(commands.Cog):
             return
 
         await change_speed(self.bot, ctx, speed)
+        await self.refresh(ctx)
 
 
 def setup(bot):
