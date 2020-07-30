@@ -1,5 +1,4 @@
 from discord.ext import commands
-import numpy as np
 from lib import color
 from lib.embed import error_embed, success_embed
 import discord
@@ -11,7 +10,6 @@ class Pagenator:
         self.bot = bot
         self.data = data
         self.page = 0
-        self.pages = np.array_split(list(data), 10)
         self.ctx = ctx
         self.message = None
         self.page_count = len(data) // 10 if not len(data) % 10 else len(data) // 10 + 1
@@ -23,7 +21,7 @@ class Pagenator:
                               color=color.default,
                               timestamp=self.ctx.message.created_at
                               )
-        for key in list(self.pages[self.page]):
+        for key in list(self.data)[self.page * 10: self.page * 10 + 10]:
             value = self.data[key]
             embed.add_field(name=key, value=value, inline=False)
         embed.set_footer(text=f'command by {self.ctx.author}', icon_url=self.ctx.author.avatar_url)
