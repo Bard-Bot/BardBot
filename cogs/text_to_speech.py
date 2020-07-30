@@ -30,6 +30,9 @@ class TextToSpeech(commands.Cog):
 
     @commands.Cog.listener(name='on_message')
     async def text_to_speech(self, message: discord.Message):
+        if message.content.startswith(';'):
+            return
+
         if self.bot.voice_manager.get(message.guild.id) is None:
             return
 
