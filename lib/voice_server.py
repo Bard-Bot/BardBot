@@ -92,9 +92,21 @@ class VoiceData:
         self._text = text
         return self
 
+    def convert_md(self):
+        self._text = re.sub(r'||.+||', ',', self._text)
+        self._text = re.sub(r'~~(.+)~~', r'\1')
+        self._text = re.sub(r'__(.+)__', r'\1')
+        self._text = re.sub(r'_(.+)_', r'\1')
+        self._text = re.sub(r'**(.+)**', r'\1')
+        self._text = re.sub(r'```(.+)```', r'\1')
+        self._text = re.sub(r'`(.+)`', r'\1')
+        if self._text.startswith('>'):
+            self._text = self._text.replace('>', '')
+        return self
+
     def convert_url(self):
         url_text = "URL省略、" if self.language == "ja" else "URL,"
-        self._text = re.sub(r"https?://[\w!?/+\-_~;.,=*&@#$%()'\[\]]+", url_text, self._text)
+        self._text = re.sub(r"https?://[\w!\?/\+\-_~=;\.,\*&@#\$%\(\)'\[\]]+", url_text, self._text)
         return self
 
     def set_text_length(self):
@@ -172,7 +184,7 @@ class VoiceServer:
         try:
             while not self.bot.is_closed():
                 item: VoiceData = await self.queue.get()
-                item.convert_w().convert_url().convert_emoji().set_name(
+                item.convert_w().convert_url().convert_emoji().convert_md().set_name(
                     self.last_author_id).convert_guild_dict().set_text_length()
 
                 if not await item.is_spendable():
