@@ -82,6 +82,8 @@ class GuildDict(commands.Cog):
     async def add(self, ctx, key, *, value):
         document = self.bot.firestore.dict.get(ctx.guild.id)
         await document.add(key, value)
+
+        self.bot.guild_dicts.set(ctx.guild.id, await document.data())
         await ctx.send(f'{ctx.author.mention}, {key}を{value}として登録しました。')
 
     @word.command(aliases=['delete', 'del', 'pop'])
@@ -91,6 +93,7 @@ class GuildDict(commands.Cog):
             await ctx.send(f'{ctx.author.mention}, {key}は存在しません。')
             return
 
+        self.bot.guild_dicts.set(ctx.guild.id, await document.data())
         await ctx.send(f'{ctx.author.mention}, {key}を削除しました。')
 
 
