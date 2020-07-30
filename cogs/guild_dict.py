@@ -87,7 +87,10 @@ class GuildDict(commands.Cog):
     @word.command(aliases=['delete', 'del', 'pop'])
     async def remove(self, ctx, *, key):
         document = self.bot.firestore.dict.get(ctx.guild.id)
-        await document.remove(key)
+        if not await document.remove(key):
+            await ctx.send(f'{ctx.author.mention}, {key}は存在しません。')
+            return
+
         await ctx.send(f'{ctx.author.mention}, {key}を削除しました。')
 
 
