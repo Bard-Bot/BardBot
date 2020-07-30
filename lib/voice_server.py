@@ -45,6 +45,7 @@ class VoiceData:
         return self._text
 
     async def source(self, session):
+        print(self.text)
         data = await fetch_voice_data(
             session=session,
             token=self.bot.google_cloud_token,
@@ -69,14 +70,15 @@ class VoiceData:
 
     def convert_emoji(self):
         if not self.guild_setting.emoji:
-            self._text = re.sub(r"<:(.{1,32}):[0-9]{17,18}>", r"", self._text)
+            self._text = re.sub(r"<a?:(.{1,32}):[0-9]{17,18}>", r"", self._text)
 
             emojis = emoji_data_python.get_emoji_regex().findall(self._text)
             for emoji in emojis:
                 self._text = self._text.replace(emoji, '')
 
             return self
-        self._text = re.sub(r"<:(.{1,32}):[0-9]{17,18}>", r"\1", self._text)
+        self._text = re.sub(r"<a?:(.{1,32}):[0-9]{17,18}>", r"\1", self._text)
+        print(self.text)
 
         return self
 
@@ -93,13 +95,13 @@ class VoiceData:
         return self
 
     def convert_md(self):
-        self._text = re.sub(r'||.+||', ',', self._text)
-        self._text = re.sub(r'~~(.+)~~', r'\1')
-        self._text = re.sub(r'__(.+)__', r'\1')
-        self._text = re.sub(r'_(.+)_', r'\1')
-        self._text = re.sub(r'**(.+)**', r'\1')
-        self._text = re.sub(r'```(.+)```', r'\1')
-        self._text = re.sub(r'`(.+)`', r'\1')
+        self._text = re.sub(r'\|\|.+\|\|', ',', self._text)
+        self._text = re.sub(r'~~(.+)~~', r'\1', self._text)
+        self._text = re.sub(r'__(.+)__', r'\1', self._text)
+        self._text = re.sub(r'_(.+)_', r'\1', self._text)
+        self._text = re.sub(r'\*\*(.+)\*\*', r'\1', self._text)
+        self._text = re.sub(r'```(.+)```', r'\1', self._text)
+        self._text = re.sub(r'`(.+)`', r'\1', self._text)
         if self._text.startswith('>'):
             self._text = self._text.replace('>', '')
         return self
@@ -184,7 +186,7 @@ class VoiceServer:
         try:
             while not self.bot.is_closed():
                 item: VoiceData = await self.queue.get()
-                item.convert_w().convert_url().convert_emoji().convert_md().set_name(
+                item.convert_url().convert_emoji().convert_md().convert_w().set_name(
                     self.last_author_id).convert_guild_dict().set_text_length()
 
                 if not await item.is_spendable():
