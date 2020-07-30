@@ -5,6 +5,9 @@ import textwrap
 import io
 from contextlib import redirect_stdout
 from discord.ext import commands
+import discord
+import psutil
+from lib.color import admin
 
 
 class Admin(commands.Cog):
@@ -91,6 +94,32 @@ class Admin(commands.Cog):
             else:
                 self._last_result = ret
                 await ctx.send(f'```py\n{value}{ret}\n```')
+
+    @commands.command()
+    async def ainfo(self, ctx):
+        embed = discord.Embed(title='admin info', color=admin)
+        embed.add_field(
+            name='ボイスチャンネル接続数',
+            value=f'{len(self.bot.voice_manager.servers)}チャンネル',
+            inline=False
+        )
+        embed.add_field(
+            name='参加ギルド数',
+            value=f'{len(self.bot.guilds)}ギルド',
+            inline=False
+        )
+        mem = psutil.virtual_memory()
+        embed.add_field(
+            name='メモリー',
+            value=f'メモリ使用率: {mem.percent}%\n使用メモリ量: {mem.used}\n空きメモリ量: {mem.available}',
+            inline=False
+        )
+        cpu = psutil.cpu_percent(interval=1)
+        embed.add_field(
+            name='CPU',
+            value=f'CPU使用率: {cpu}%'
+        )
+        await ctx.send(embed=embed)
 
 
 def setup(bot):
