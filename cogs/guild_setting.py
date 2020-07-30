@@ -19,6 +19,11 @@ class GuildSetting(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def refresh(self, ctx, document):
+        self.bot.guild_settings.set(ctx.guild.id,
+                                    await document.data()
+                                    )
+
     @commands.group(invoke_without_command=True, aliases=['setting', 'preference'])
     async def pref(self, ctx):
         """ギルドの設定を表示"""
@@ -30,7 +35,7 @@ class GuildSetting(commands.Cog):
         embed.add_field(name='Botのメッセージ', value=t_or_f(data.bot), inline=False)
         embed.add_field(name='再接続', value='する' if data.keep else 'しない', inline=False)
         embed.add_field(name='読み上げ上限', value=f'{data.limit}文字', inline=False)
-        embed.add_field(name='設定コマンド', value=how_to_change.format(prefix=ctx.prefix))
+        embed.add_field(name='設定コマンド', value=how_to_change.format(prefix=ctx.prefix), inline=False)
 
         await ctx.send(embed=embed)
 
@@ -39,6 +44,7 @@ class GuildSetting(commands.Cog):
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(name=not data.name)
+        await self.refresh(ctx, document)
         await ctx.send(
             f'{ctx.author.mention}, 名前を `{t_or_f(data.name)}` から `{t_or_f(not data.name)}` に変更しました。'
         )
@@ -48,6 +54,7 @@ class GuildSetting(commands.Cog):
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(emoji=not data.emoji)
+        await self.refresh(ctx, document)
         await ctx.send(
             f'{ctx.author.mention}, 絵文字を `{t_or_f(data.emoji)}` から `{t_or_f(not data.emoji)}` に変更しました。'
         )
@@ -57,6 +64,7 @@ class GuildSetting(commands.Cog):
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(emoji=not data.bot)
+        await self.refresh(ctx, document)
         await ctx.send(
             f'{ctx.author.mention}, Botのメッセージを `{t_or_f(data.bot)}` から `{t_or_f(not data.bot)}` に変更しました。'
         )
@@ -69,6 +77,7 @@ class GuildSetting(commands.Cog):
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(limit=limit)
+        await self.refresh(ctx, document)
         await ctx.send(f'{ctx.author.mention}, 文字数制限を`{data.limit}`文字から`{limit}`文字に変更しました。')
 
     @pref.command()
@@ -78,6 +87,7 @@ class GuildSetting(commands.Cog):
         await document.edit(emoji=not data.keep)
         b = '再接続する' if data.keep else '再接続しない'
         a = '再接続する' if (not data.keep) else '再接続しない'
+        await self.refresh(ctx, document)
         await ctx.send(
             f'{ctx.author.mention}, 接続が切られても `{b}` から `{a}` に変更しました。'
         )

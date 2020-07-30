@@ -12,8 +12,6 @@ class Voice(commands.Cog):
     @commands.command()
     async def join(self, ctx):
         async with ctx.channel.typing():
-            raise Exception('haha w')
-
             # サーバー内で既に利用されていた場合
             if self.bot.voice_manager.get(ctx.guild.id) is not None:
                 await ctx.send("このサーバー内で既に利用されています。moveコマンドを使用するか、切断してから再度お試しください。")
@@ -79,7 +77,7 @@ class Voice(commands.Cog):
             await self.bot.voice_manager.close(ctx.guild.id)
 
     @leave.error
-    def leave_error(self, ctx, exception):
+    async def leave_error(self, ctx, exception):
         await ctx.send('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。')
         sentry_sdk.capture_exception(exception)
 

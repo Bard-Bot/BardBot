@@ -28,6 +28,21 @@ def _prefix_callable(bot, msg):
     return base
 
 
+class Storage:
+    def __init__(self, key_type=int):
+        self.storage = {}
+        self.key_type = key_type
+
+    def get(self, key):
+        if not isinstance(key, self.key_type):
+            raise KeyError(f'invalid key type: {type(key)}')
+
+        return self.storage.get(key, None)
+
+    def set(self, key, value):
+        self.storage[key] = value
+
+
 class BardBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=_prefix_callable, help_command=None,
@@ -39,6 +54,11 @@ class BardBot(commands.Bot):
         sentry_sdk.capture_exception(Exception("This is an example of an error message."))
         self.loop.create_task(self.google_cloud_token_loop())
         self.voice_manager = VoiceManager(self)
+
+        # guild and user settings dict
+        self.guild_settings = Storage()
+        self.user_settings = Storage()
+        self.guild_dicts = Storage()
 
     async def on_command_error(self, context, exception):
 
