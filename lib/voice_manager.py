@@ -1,3 +1,6 @@
+import sentry_sdk
+
+
 class VoiceManager:
     def __init__(self, bot):
         self.bot = bot
@@ -18,8 +21,8 @@ class VoiceManager:
     async def close(self, guild_id, text="読み上げを終了します。"):
         try:
             await self.servers[guild_id].close(text)
-        except Exception:
-            pass
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
         self.delete(guild_id)
 
     async def all_close(self, text="読み上げを終了します。"):
@@ -27,6 +30,6 @@ class VoiceManager:
             server = self.servers[key]
             try:
                 await server.close(text)
-            except Exception:
-                pass
+            except Exception as e:
+                sentry_sdk.capture_exception(e)
             self.delete(key)

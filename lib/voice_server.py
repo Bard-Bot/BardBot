@@ -7,7 +7,8 @@ import re
 import sentry_sdk
 import aiohttp
 import emoji_data_python
-from lib.embed import error_embed, success_embed
+from lib import color
+
 LANGUAGE_COMPILE = re.compile(r'([a-zA-Z]{2})::(.+)')
 LANGUAGES = {
     'ja': 'ja-JP',
@@ -143,9 +144,15 @@ class VoiceServer:
         await self.voice_client.disconnect(force=True)
         self.task.cancel()
         if error:
-            await self.read_text_channel.send(embed=error_embed(text))
+            embed = discord.Embed(title='エラー',
+                                  description=text,
+                                  color=color.error)
+            await self.read_text_channel.send(embed=embed)
         else:
-            await self.read_text_channel.send(embed=success_embed(text))
+            embed = discord.Embed(title='成功',
+                                  description=text,
+                                  color=color.success)
+            await self.read_text_channel.send(embed=embed)
 
     async def move_voice_channel(self, new_voice_channel):
         self.voice_client.stop()
