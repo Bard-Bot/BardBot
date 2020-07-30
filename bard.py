@@ -20,6 +20,7 @@ extensions = [
     'cogs.voice',
     'cogs.text_to_speech',
     'cogs.guild_dict',
+    'cogs.admin',
 ]
 
 for extension in extensions:
