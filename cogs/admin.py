@@ -8,6 +8,7 @@ from discord.ext import commands
 import discord
 import psutil
 from lib.color import admin
+from lib.embed import notice_embed
 
 
 class Admin(commands.Cog):
@@ -120,6 +121,21 @@ class Admin(commands.Cog):
             value=f'CPU使用率: {cpu}%'
         )
         await ctx.send(embed=embed)
+
+    @commands.command(aliases=['exit', 'finish'])
+    async def quit(self, ctx):
+        text = 'Botが終了するため、１分後に読み上げが終了します。'
+        for key, server in self.bot.voice_manager.servers.items():
+            self.bot.loop.create_task(server.read_text_channel.send(embed=notice_embed(text, ctx)))
+
+        await ctx.send(embed=notice_embed('１分後に終了します', ctx))
+        await asyncio.sleep(60)
+
+        for key, server in self.bot.voice_manager.servers.items():
+            await server.close('Botが終了するため、読み上げが終了します...')
+
+        await ctx.send(embed=notice_embed('終了します', ctx))
+        await self.bot.close()
 
 
 def setup(bot):

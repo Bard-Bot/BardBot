@@ -2,3 +2,4 @@ default = 0x197fd2
 success = 0x4CAF50
 error = 0xFF5252
 admin = 0xFFC107
+notice = 0xFFC107

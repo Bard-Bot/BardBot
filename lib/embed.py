@@ -1,4 +1,4 @@
-from .color import error, success
+from .color import error, success, notice
 import discord
 
 
@@ -19,4 +19,13 @@ def error_embed(desc, ctx):
     embed = discord.Embed(title='エラー',
                           description=desc,
                           color=error)
+    return set_meta(embed, ctx)
+
+
+def notice_embed(desc, ctx):
+    embed = discord.Embed(
+        title='お知らせ',
+        description=desc,
+        color=notice
+    )
     return set_meta(embed, ctx)
