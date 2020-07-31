@@ -166,9 +166,10 @@ class VoiceServer:
                                   color=color.success)
             await self.read_text_channel.send(embed=embed)
 
-    async def move_voice_channel(self, new_voice_channel):
+    async def move_voice_channel(self, new_voice_channel, new_text_channel):
         self.voice_client.stop()
         self.send_voice_channel = new_voice_channel
+        self.read_text_channel = new_text_channel
         await self.voice_client.move_to(new_voice_channel)
         return True
 

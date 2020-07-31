@@ -123,12 +123,9 @@ class Voice(commands.Cog):
                 await ctx.send(embed=error_embed("ボイスチャンネルに接続した状態で実行してください。", ctx))
                 return
 
-            if ctx.author.voice.channel.id != server.send_voice_channel.id:
-                await ctx.send(embed=error_embed("Botと同じボイスチャンネルで実行してください。", ctx))
-                return
-
             # VoiceClient.move_toを実行
-            await server.move_voice_channel(ctx.author.voice.channel)
+            await server.move_voice_channel(ctx.author.voice.channel, ctx.channel)
+            await ctx.send(embed=success_embed('移動しました。', ctx))
 
     @move.error
     async def move_error(self, ctx, exception):
