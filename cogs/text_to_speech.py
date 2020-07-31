@@ -28,18 +28,7 @@ class TextToSpeech(commands.Cog):
 
         return data
 
-    @commands.Cog.listener(name='on_message')
-    async def text_to_speech(self, message: discord.Message):
-        if message.content.startswith(';'):
-            return
-
-        if self.bot.voice_manager.get(message.guild.id) is None:
-            return
-
-        ctx = await self.bot.get_context(message)
-        if ctx.command is not None:
-            return
-
+    async def say(self, message):
         user_setting = self.bot.user_settings.get(message.author.id) or await self.set_user_setting(message.author.id)
         guild_setting = self.bot.guild_settings.get(message.guild.id) or await self.set_guild_setting(message.guild.id)
         guild_dict = self.bot.guild_dicts.get(message.guild.id) or await self.set_guild_dict(message.guild.id)
@@ -53,6 +42,31 @@ class TextToSpeech(commands.Cog):
         data = VoiceData(self.bot, message, content, guild_setting, user_setting, guild_dict)
 
         await self.bot.voice_manager.get(message.guild.id).put(data)
+
+    @commands.Cog.listener(name='on_message')
+    async def text_to_speech(self, message: discord.Message):
+        if message.content.startswith(';'):
+            return
+
+        if self.bot.voice_manager.get(message.guild.id) is None:
+            return
+
+        server = self.bot.voice_manager.get(message.guild.id)
+
+        if server.read_text_channel.id != message.channel.id:
+            return
+
+        if (message.author.voice is None) or (message.author.voice.channel is None):
+            return
+
+        if message.author.voice.channel.id != server.send_voice_channel.id:
+            return
+
+        ctx = await self.bot.get_context(message)
+        if ctx.command is not None:
+            return
+
+        await self.say(message)
 
 
 def setup(bot):

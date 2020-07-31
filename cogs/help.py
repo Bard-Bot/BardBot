@@ -7,7 +7,8 @@ guild_invite = "https://discord.gg/QmCmMtp"
 website = "https://bardbot.net/"
 fields = [
     ["課金方法", f"[こちらのサイト]({website})に登録し、サーバーを選択してからサブスクリプションに登録してください。"],
-    ["特殊機能", "`en::`を先頭につけると、英語で読み上げてくれます。"]
+    ["特殊機能", "`en::`を先頭につけると、英語で読み上げてくれます。"],
+    ['コマンド一覧', 'DMにコマンド一覧を送信しました。個別にここに表示したい場合はcmdコマンドをご利用ください。']
 ]
 
 
@@ -79,10 +80,17 @@ class Help(commands.Cog):
     @commands.command()
     async def help(self, ctx):
         await ctx.send(embed=get_info_embed(ctx))
-        await ctx.send(embed=get_help_embed(ctx))
+        try:
+            await ctx.author.send(embed=get_help_embed(ctx))
+        except discord.Forbidden:
+            pass
         data = await self.bot.firestore.guild.get(ctx.guild.id).data()
         if data.subscribe == 0:
             await ctx.send(embed=get_do_subscribe_embed(ctx))
+
+    @commands.command(aliases=['cmd'])
+    async def command(self, ctx):
+        await ctx.send(embed=get_help_embed(ctx))
 
 
 def setup(bot):
