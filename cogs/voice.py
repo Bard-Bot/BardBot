@@ -85,6 +85,11 @@ class Voice(commands.Cog):
                 await ctx.send(embed=error_embed("ボイスチャンネルに接続した状態で実行してください。", ctx))
                 return
 
+            if server.read_text_channel.id != ctx.channel.id:
+                await ctx.send(
+                    embed=error_embed('読み上げるチャンネルと同じチャンネルで実行してください。')
+                )
+
             if ctx.author.voice.channel.id != server.send_voice_channel.id:
                 await ctx.send(
                     embed=error_embed("Botと同じボイスチャンネルで実行してください。", ctx)
