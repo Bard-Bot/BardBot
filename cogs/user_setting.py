@@ -85,7 +85,7 @@ async def change_speed(bot, ctx, speed):
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(speed=speed)
-    await ctx.send(embed=success_embed(f'ピッチを{data.speed}から{speed}に変更しました。', ctx))
+    await ctx.send(embed=success_embed(f'スピードを{data.speed}から{speed}に変更しました。', ctx))
 
 
 class UserSetting(commands.Cog):
