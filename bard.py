@@ -22,6 +22,7 @@ extensions = [
     'cogs.guild_dict',
     'cogs.admin',
     'cogs.help',
+    'cogs.ad',
 ]
 
 for extension in extensions:
