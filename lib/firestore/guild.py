@@ -8,7 +8,7 @@ class GuildData:
 
     @property
     def count(self):
-        return self.data['count']
+        return sum(value for key, value in self.data.items() if key != 'subscribe')
 
     @property
     def subscribe(self):
@@ -49,7 +49,22 @@ class GuildSnapshot:
 
     async def spend_char(self, count):
         """使用可能文字数を減らす"""
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': Increment(-count)}, merge=True))
+        data = await self.data()
+        data2 = {key: value for key, value in data.data.items() if key != 'subscribe' and value != 0}
+        used_data = {}
+        while count > 0:
+            min_key = min(data2, key=data2.get)
+            if count > data2[min_key]:
+                count -= data2[min_key]
+                used_data[min_key] = 0
+                del data2[min_key]
+                continue
+            used_data[min_key] = Increment(-count)
+            count = 0
+        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, used_data, merge=True))
+
+    async def set_data(self, new_data):
+        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, new_data, merge=True))
 
 
 class Guild:

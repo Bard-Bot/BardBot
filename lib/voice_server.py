@@ -123,6 +123,8 @@ class VoiceData:
     async def is_spendable(self):
         document = self.bot.firestore.guild.get(self.message.guild.id)
         data = await document.data()
+        new = {key: 0 for key in data.data.keys() if key != 'subscribe'}
+        await document.set_data(new)
         return data.is_spendable(len(self.text))
 
     async def spend_char(self):
