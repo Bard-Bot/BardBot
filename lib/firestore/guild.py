@@ -68,6 +68,9 @@ class GuildSnapshot:
     async def set_data(self, new_data):
         await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, new_data, merge=True))
 
+    async def set_subscribe(self):
+        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'subscribe': 1}, merge=True))
+
 
 class Guild:
     def __init__(self, firestore):
