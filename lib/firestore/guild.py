@@ -52,6 +52,8 @@ class GuildSnapshot:
         data = await self.data()
         data2 = {key: value for key, value in data.data.items() if key != 'subscribe' and value != 0}
         used_data = {}
+        if not data2:
+            return
         while count > 0:
             min_key = min(data2, key=data2.get)
             if count > data2[min_key]:
