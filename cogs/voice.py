@@ -27,9 +27,6 @@ class Voice(commands.Cog):
                 )
                 return
 
-            voice_channel = ctx.author.voice.channel
-            voice_client = await voice_channel.connect(timeout=5.0)
-
             # 残り文字数が足りているか
             data = await self.bot.firestore.guild.get(ctx.guild.id).data()
             if data.count == 0:
@@ -37,6 +34,9 @@ class Voice(commands.Cog):
                     embed=error_embed("今月の利用可能文字数を超えています。\nまだご利用になりたい場合は、公式サイトより購入してください。", ctx)
                 )
                 return
+
+            voice_channel = ctx.author.voice.channel
+            voice_client = await voice_channel.connect(timeout=5.0)
 
             # ボイスサーバーの作成
             server = VoiceServer(self.bot, voice_channel, ctx.channel, voice_client)
