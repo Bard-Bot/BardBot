@@ -137,6 +137,15 @@ class Admin(commands.Cog):
         await ctx.send(embed=notice_embed('終了します', ctx))
         await self.bot.close()
 
+    @commands.command()
+    async def channels(self, ctx):
+        """接続されているチャンネルのギルド一覧を表示する"""
+        guild_names = []
+        for key, server in self.bot.voice_manager.servers.items():
+            guild_names.append(server.read_text_channel.guild.name)
+        text = '```\n' + '\n'.join(guild_names)[:1500] + '\n```'
+        await ctx.send(text)
+
 
 def setup(bot):
     return bot.add_cog(Admin(bot))
