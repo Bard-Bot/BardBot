@@ -9,6 +9,7 @@ from lib.google_cloud_token import TokenGenerator
 import asyncio
 import uvloop
 import sentry_sdk
+from lib.embed import error_embed
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 load_dotenv(verbose=True)
 
@@ -86,3 +87,18 @@ class BardBot(commands.Bot):
         while not self.is_closed():
             self.google_cloud_token = await self.token_generator.get()
             await asyncio.sleep(3000)
+
+    async def on_message(self, message: discord.Message):
+        if message.author.bot:
+            return
+
+        context = await self.get_context(message)
+
+        if context.command is not None:
+            if context.command.name in ['help', 'voice', 'pitch', 'speed', 'cmd']:
+                await self.invoke(context)
+                return
+            if message.guild is None:
+                await message.channel.send(embed=error_embed('このコマンドはサーバー内でのみ使用可能です。', context))
+                return
+            await self.invoke(context)
