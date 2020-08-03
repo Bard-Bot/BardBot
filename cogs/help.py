@@ -20,7 +20,7 @@ def get_info_embed(ctx):
                              inline=False
                              )
 
-    return set_meta(info_embed, ctx)
+    return info_embed
 
 
 def get_help_embed(ctx):
@@ -56,7 +56,7 @@ def get_base_help_embed(ctx):
         [f"{prefix}join", "ボイスチャンネルに接続します。"],
         [f"{prefix}leave", "ボイスチャンネルから切断します。"],
         [f"{prefix}voice", "音声の設定を表示します。"],
-        [f"{prefix}voice, {prefix}speed, {prefix}pitch", f"音声の種類を変更します。これらの使い方は`{prefix}voice`コマンドで表示された使用方法をご覧ください。"],
+        [f"{prefix}cmd", "全ヘルプをこのチャンネルに表示します。"],
     ]
 
     embed = discord.Embed(
@@ -90,7 +90,7 @@ class Help(commands.Cog):
 
     @commands.command()
     async def help(self, ctx):
-        await ctx.send(f'{ctx.author.mention}, DMに全てのコマンド一覧を送信しました。個別にここに表示したい場合は`{ctx.prefix}cmd`と入力してください。')
+        await ctx.send(f'{ctx.author.mention}, DMに全てのコマンド一覧を送信しました。`{ctx.prefix}cmd`で全ヘルプをこのチャンネルに表示します。')
         await ctx.send(embed=get_info_embed(ctx))
         await ctx.send(embed=get_base_help_embed(ctx))
         try:
