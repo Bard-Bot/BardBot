@@ -15,7 +15,7 @@ emoji-data-python==1.4.2
 firebase-admin==4.3.0
 flake8==3.8.3
 future==0.18.2
-gcloud-aio-auth==3.3.1
+gcloud-aio-auth==3.4.1
 google-api-core==1.22.0
 google-api-python-client==1.10.0
 google-auth==1.20.0
