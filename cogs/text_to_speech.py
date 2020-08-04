@@ -48,6 +48,9 @@ class TextToSpeech(commands.Cog):
         if message.content.startswith(';'):
             return
 
+        if message.guild is None:
+            return
+
         if self.bot.voice_manager.get(message.guild.id) is None:
             return
 
