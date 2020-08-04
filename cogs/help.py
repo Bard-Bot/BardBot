@@ -5,29 +5,22 @@ from lib.embed import set_meta
 bot_invite = "https://discord.com/api/oauth2/authorize?client_id=727687910643466271&permissions=11855936&scope=bot"
 guild_invite = "https://discord.gg/QmCmMtp"
 website = "https://bardbot.net/"
-fields = [
-    ["課金方法", f"[こちらのサイト]({website})に登録し、サーバーを選択してからサブスクリプションに登録してください。"],
-    ["特殊機能", "`en::`を先頭につけると、英語で読み上げてくれます。"],
-    ['コマンド一覧', 'DMにコマンド一覧を送信しました。個別にここに表示したい場合はcmdコマンドをご利用ください。']
-]
 
 
 def get_info_embed(ctx):
     info_embed = discord.Embed(title='Bard - 有料読み上げBot -', color=color.default)
-    if not ctx.author.is_on_mobile():
+    if ctx.guild and not ctx.author.is_on_mobile():
         info_embed.add_field(name='各種URL',
-                             value=f"[**` Botの導入URL `**]({bot_invite})\n [**` 公式サーバー `**]({guild_invite})\n [**` ウェブサイト `**]({website})",
+                             value=f"[**` 公式サーバー `**]({guild_invite})\n [**` ウェブサイト `**]({website})",
                              inline=False
                              )
     else:
         info_embed.add_field(name='各種URL',
-                             value=f"[Botの導入URL]({bot_invite})\n [公式サーバー]({guild_invite})\n [ウェブサイト]({website})",
+                             value=f"[公式サーバー]({guild_invite})\n [ウェブサイト]({website})",
                              inline=False
                              )
-    for field in fields:
-        info_embed.add_field(name=field[0], value=field[1], inline=False)
 
-    return set_meta(info_embed, ctx)
+    return info_embed
 
 
 def get_help_embed(ctx):
@@ -57,6 +50,24 @@ def get_help_embed(ctx):
     return set_meta(embed, ctx)
 
 
+def get_base_help_embed(ctx):
+    prefix = ctx.prefix
+    cmds = [
+        [f"{prefix}join", "ボイスチャンネルに接続します。"],
+        [f"{prefix}leave", "ボイスチャンネルから切断します。"],
+        [f"{prefix}voice", "音声の設定を表示します。"],
+        [f"{prefix}cmd", "全ヘルプをこのチャンネルに表示します。"],
+    ]
+
+    embed = discord.Embed(
+        title="基本コマンド一覧", description=f"プレフィックスは`{prefix}`です。", color=color.default
+    )
+    for cmd in cmds:
+        embed.add_field(name=cmd[0], value=cmd[1], inline=False)
+
+    return set_meta(embed, ctx)
+
+
 def get_do_subscribe_embed(ctx):
     embed = discord.Embed(
         title='サブスクリプションに登録しませんか？',
@@ -79,7 +90,9 @@ class Help(commands.Cog):
 
     @commands.command()
     async def help(self, ctx):
+        await ctx.send(f'{ctx.author.mention}, DMに全てのコマンド一覧を送信しました。`{ctx.prefix}cmd`で全ヘルプをこのチャンネルに表示します。')
         await ctx.send(embed=get_info_embed(ctx))
+        await ctx.send(embed=get_base_help_embed(ctx))
         try:
             await ctx.author.send(embed=get_help_embed(ctx))
         except discord.Forbidden:
