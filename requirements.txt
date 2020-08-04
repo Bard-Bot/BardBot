@@ -32,7 +32,7 @@ idna==2.10
 mccabe==0.6.1
 msgpack==1.0.0
 multidict==4.7.6
-protobuf==3.12.2
+protobuf==3.12.4
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycodestyle==2.6.0
