@@ -9,7 +9,7 @@ website = "https://bardbot.net/"
 
 def get_info_embed(ctx):
     info_embed = discord.Embed(title='Bard - 有料読み上げBot -', color=color.default)
-    if not ctx.author.is_on_mobile():
+    if ctx.guild and not ctx.author.is_on_mobile():
         info_embed.add_field(name='各種URL',
                              value=f"[**` 公式サーバー `**]({guild_invite})\n [**` ウェブサイト `**]({website})",
                              inline=False
