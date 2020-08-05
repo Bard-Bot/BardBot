@@ -160,8 +160,8 @@ class VoiceServer:
         await self.session.close()
         try:
             await self.voice_client.disconnect(force=True)
-        except Exception:
-            pass
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
         self.task.cancel()
         if error:
             embed = discord.Embed(title='エラー',
