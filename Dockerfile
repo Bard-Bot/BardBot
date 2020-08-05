@@ -37,5 +37,6 @@ WORKDIR /bot
 ADD . /bot
 
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
+RUN pip install -U git+https://github.com/sizumita/discord.py.git
 
 CMD ["python", "bard.py"]
