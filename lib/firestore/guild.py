@@ -26,6 +26,9 @@ class GuildSnapshot:
         self.bot = guild.bot
 
     async def data(self):
+        if not await self.exists():
+            return await self.create()
+
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
 
         return GuildData(result.to_dict())

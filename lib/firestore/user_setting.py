@@ -29,7 +29,7 @@ class UserSettingSnapshot:
         result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
         d = result.to_dict()
         if d is None:
-            return UserSettingData(await self.create())
+            return await self.create()
 
         return UserSettingData(d)
 
@@ -48,7 +48,7 @@ class UserSettingSnapshot:
         )
 
         await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
-        return payload
+        return UserSettingData(payload)
 
     async def edit(self, voice=None, pitch=None, speed=None):
         base = await self.data()
