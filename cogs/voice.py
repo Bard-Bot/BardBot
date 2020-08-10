@@ -10,6 +10,10 @@ class Voice(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        await self.bot.firestore.guild.get(guild.id).create()
+
     @commands.command()
     async def join(self, ctx):
         async with ctx.channel.typing():
