@@ -91,7 +91,7 @@ class Voice(commands.Cog):
 
             if server.read_text_channel.id != ctx.channel.id:
                 await ctx.send(
-                    embed=error_embed('読み上げるチャンネルと同じチャンネルで実行してください。')
+                    embed=error_embed('読み上げるチャンネルと同じチャンネルで実行してください。', ctx)
                 )
 
             if ctx.author.voice.channel.id != server.send_voice_channel.id:
