@@ -14,6 +14,23 @@ class Voice(commands.Cog):
     async def on_guild_join(self, guild):
         await self.bot.firestore.guild.get(guild.id).create()
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before: discord.VoiceState, after: discord.VoiceState):
+        if before.channel is None or after.channel is not None:
+            return
+        if member.guild is None:
+            return
+
+        server = self.bot.voice_manager.get(member.guild.id)
+        if server is None:
+            return
+
+        if server.send_voice_channel.id != before.channel.id:
+            return
+
+        if len(before.channel.members) == 1:
+            await server.close('誰もいなくなったので読み上げを終了します。')
+
     @commands.command()
     async def join(self, ctx):
         async with ctx.channel.typing():
