@@ -19,21 +19,25 @@ class Voice(commands.Cog):
         await self.bot.firestore.guild.get(guild.id).create()
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before: discord.VoiceState, after: discord.VoiceState) -> None:
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState) -> None:
         if before.channel is None or after.channel is not None:
-            return
-        if member.guild is None:
             return
 
         server = self.bot.voice_manager.get(member.guild.id)
         if server is None:
             return
 
+        if member.id == member.guild.me.id:
+            await server.close('強制的に切断されたため終了します。')
+            return
+
         if server.send_voice_channel.id != before.channel.id:
             return
 
         if len(before.channel.members) == 1:
-            await server.close('誰もいなくなったので読み上げを終了します。')
+            if before.channel.members[0].id == member.guild.me.id:
+                await server.close('誰もいなくなったので読み上げを終了します。')
+                return
 
     @commands.command()
     async def join(self, ctx: commands.Context) -> None:
