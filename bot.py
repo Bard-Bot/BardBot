@@ -66,6 +66,8 @@ class BardBot(commands.Bot):
         # ignore command.error
         if hasattr(context.command, 'on_error'):
             return
+        if isinstance(exception, commands.CheckFailure):
+            return
         if isinstance(exception, commands.CommandNotFound):
             return
         if isinstance(exception, commands.CommandOnCooldown):
