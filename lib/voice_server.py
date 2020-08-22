@@ -161,18 +161,24 @@ class VoiceServer:
         try:
             await self.voice_client.disconnect(force=True)
         except Exception as e:
-            sentry_sdk.capture_exception(e)
+            pass
         self.task.cancel()
         if error:
             embed = discord.Embed(title='エラー',
                                   description=text,
                                   color=color.error)
-            await self.read_text_channel.send(embed=embed)
+            try:
+                await self.read_text_channel.send(embed=embed)
+            except Exception:  # なんかチャンネル削除されることがあった....謎すぎ！
+                pass
         else:
             embed = discord.Embed(title='成功',
                                   description=text,
                                   color=color.success)
-            await self.read_text_channel.send(embed=embed)
+            try:
+                await self.read_text_channel.send(embed=embed)
+            except Exception:
+                pass
         self.bot.voice_manager.delete(self.read_text_channel.guild.id)
 
     async def move_voice_channel(self, new_voice_channel, new_text_channel):
