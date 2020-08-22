@@ -4,18 +4,22 @@ import discord
 import asyncio
 import sentry_sdk
 from lib.embed import error_embed, success_embed
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from bard import BardBot
 
 
+@dataclass
 class Voice(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    bot: 'BardBot'
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild: discord.Guild) -> None:
         await self.bot.firestore.guild.get(guild.id).create()
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before: discord.VoiceState, after: discord.VoiceState):
+    async def on_voice_state_update(self, member, before: discord.VoiceState, after: discord.VoiceState) -> None:
         if before.channel is None or after.channel is not None:
             return
         if member.guild is None:
@@ -32,7 +36,7 @@ class Voice(commands.Cog):
             await server.close('誰もいなくなったので読み上げを終了します。')
 
     @commands.command()
-    async def join(self, ctx):
+    async def join(self, ctx: commands.Context) -> None:
         async with ctx.channel.typing():
             # サーバー内で既に利用されていた場合
             if self.bot.voice_manager.get(ctx.guild.id) is not None:
@@ -74,7 +78,7 @@ class Voice(commands.Cog):
                 pass
 
     @join.error
-    async def join_error(self, ctx, exception):
+    async def join_error(self, ctx: commands.Context, exception: Exception) -> None:
         exception = getattr(exception, 'original', exception)
 
         if isinstance(exception, discord.ClientException):
@@ -92,7 +96,7 @@ class Voice(commands.Cog):
             sentry_sdk.capture_exception(exception)
 
     @commands.command()
-    async def leave(self, ctx):
+    async def leave(self, ctx: commands.Context) -> None:
         async with ctx.channel.typing():
 
             server = self.bot.voice_manager.get(ctx.guild.id)
@@ -121,14 +125,14 @@ class Voice(commands.Cog):
             await self.bot.voice_manager.close(ctx.guild.id)
 
     @leave.error
-    async def leave_error(self, ctx, exception):
+    async def leave_error(self, ctx: commands.Context, exception: Exception) -> None:
         await ctx.send(
             embed=error_embed('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。', ctx)
         )
         sentry_sdk.capture_exception(exception)
 
     @commands.command()
-    async def fleave(self, ctx):
+    async def fleave(self, ctx: commands.Context) -> None:
         """強制的に終了させる"""
         server = self.bot.voice_manager.get(ctx.guild.id)
         if server is None:
@@ -141,7 +145,7 @@ class Voice(commands.Cog):
         await ctx.send(embed=success_embed('処理が完了しました。', ctx))
 
     @commands.command()
-    async def move(self, ctx):
+    async def move(self, ctx: commands.Context) -> None:
         """Botを移動させる"""
         async with ctx.channel.typing():
             server = self.bot.voice_manager.get(ctx.guild.id)
@@ -158,7 +162,7 @@ class Voice(commands.Cog):
             await ctx.send(embed=success_embed('移動しました。', ctx))
 
     @move.error
-    async def move_error(self, ctx, exception):
+    async def move_error(self, ctx: commands.Context, exception: Exception) -> None:
         exception = getattr(exception, 'original', exception)
 
         if isinstance(exception, discord.ClientException):

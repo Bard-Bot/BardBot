@@ -9,16 +9,20 @@ import discord
 import psutil
 from lib.color import admin
 from lib.embed import notice_embed
+from typing import TYPE_CHECKING, Any, List
+from dataclasses import dataclass
+
+if TYPE_CHECKING:
+    from bard import BardBot
 
 
+@dataclass
 class Admin(commands.Cog):
     """Admin-only commands that make the bot dynamic."""
+    bot: 'BardBot'
+    _last_result: Any = None
 
-    def __init__(self, bot):
-        self.bot = bot
-        self._last_result = None
-
-    def cleanup_code(self, content):
+    def cleanup_code(self, content: str) -> str:
         """Automatically removes code blocks from the code."""
         # remove ```py\n```
         if content.startswith('```') and content.endswith('```'):
@@ -27,10 +31,10 @@ class Admin(commands.Cog):
         # remove `foo`
         return content.strip('` \n')
 
-    async def cog_check(self, ctx):
+    async def cog_check(self, ctx: commands.Context) -> bool:
         return await self.bot.is_owner(ctx.author)
 
-    async def run_process(self, command):
+    async def run_process(self, command: str) -> List[str]:
         try:
             process = await asyncio.create_subprocess_shell(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             result = await process.communicate()
@@ -41,7 +45,7 @@ class Admin(commands.Cog):
         return [output.decode() for output in result]
 
     @commands.command(hidden=True)
-    async def pull(self, ctx):
+    async def pull(self, ctx: commands.Context) -> None:
         await ctx.send('start pulling...')
         async with ctx.typing():
             stdout, stderr = await self.run_process('git pull')
@@ -50,7 +54,7 @@ class Admin(commands.Cog):
             await ctx.send(content)
 
     @commands.command(pass_context=True, hidden=True, name='eval')
-    async def _eval(self, ctx, *, body: str):
+    async def _eval(self, ctx: commands.Context, *, body: str) -> None:
         """Evaluates a code"""
 
         env = {
@@ -73,7 +77,8 @@ class Admin(commands.Cog):
         try:
             exec(to_compile, env)
         except Exception as e:
-            return await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
+            await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n```')
+            return
 
         func = env['func']
         try:
@@ -97,7 +102,7 @@ class Admin(commands.Cog):
                 await ctx.send(f'```py\n{value}{ret}\n```')
 
     @commands.command()
-    async def ainfo(self, ctx):
+    async def ainfo(self, ctx: commands.Context) -> None:
         embed = discord.Embed(title='admin info', color=admin)
         embed.add_field(
             name='ボイスチャンネル接続数',
@@ -123,7 +128,7 @@ class Admin(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['exit', 'finish'])
-    async def quit(self, ctx):
+    async def quit(self, ctx: commands.Context) -> None:
         text = 'Botが終了するため、１分後に読み上げが終了します。'
         for key, server in self.bot.voice_manager.servers.items():
             self.bot.loop.create_task(server.read_text_channel.send(embed=notice_embed(text, ctx)))
@@ -138,7 +143,7 @@ class Admin(commands.Cog):
         await self.bot.close()
 
     @commands.command()
-    async def channels(self, ctx):
+    async def channels(self, ctx: commands.Context) -> None:
         """接続されているチャンネルのギルド一覧を表示する"""
         guild_names = []
         for key, server in self.bot.voice_manager.servers.items():
@@ -147,5 +152,5 @@ class Admin(commands.Cog):
         await ctx.send(text)
 
 
-def setup(bot):
+def setup(bot: 'BardBot') -> None:
     return bot.add_cog(Admin(bot))

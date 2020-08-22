@@ -2,6 +2,11 @@ from discord.ext import commands
 import discord
 from lib import color
 from lib.embed import set_meta, success_embed, error_embed
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from bard import BardBot
+
 JA_VOICE_TYPES = "ABCD"
 EN_VOICE_TYPES = "ABCDEF"
 
@@ -19,21 +24,21 @@ how_to_change = """
 """
 
 
-def get_types_text(types, with_lower=True):
+def get_types_text(types: str, with_lower: bool = True) -> str:
     if with_lower:
         return f"{', '.join(t.lower() for t in types)}, {', '.join(t for t in types)}"
 
     return f"{', '.join(t for t in types)}"
 
 
-async def edit_voice_type(bot, ctx, language, voice_type):
+async def edit_voice_type(bot: 'BardBot', ctx: commands.Context, language: str, voice_type: str) -> None:
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(voice={language: voice_type})
     await ctx.send(embed=success_embed(f'{language}のボイスの設定を{data.voice[language]}から{voice_type}に変更しました。', ctx))
 
 
-async def en_setting(bot, ctx, voice_type):
+async def en_setting(bot: 'BardBot', ctx: commands.Context, voice_type: str) -> None:
     if voice_type.upper() not in EN_VOICE_TYPES:
         await ctx.send(embed=error_embed(f"ボイスの設定は`{get_types_text(EN_VOICE_TYPES)}`から選んでください。", ctx))
         return
@@ -41,7 +46,7 @@ async def en_setting(bot, ctx, voice_type):
     await edit_voice_type(bot, ctx, 'en', voice_type.upper())
 
 
-async def ja_setting(bot, ctx, voice_type):
+async def ja_setting(bot: 'BardBot', ctx: commands.Context, voice_type: str) -> None:
     if voice_type.upper() not in JA_VOICE_TYPES:
         await ctx.send(embed=error_embed(f"ボイスの設定は`{get_types_text(JA_VOICE_TYPES)}`から選んでください。", ctx))
         return
@@ -49,7 +54,7 @@ async def ja_setting(bot, ctx, voice_type):
     await edit_voice_type(bot, ctx, 'ja', voice_type.upper())
 
 
-async def show_voice_setting(bot, ctx):
+async def show_voice_setting(bot: 'BardBot', ctx: commands.Context) -> None:
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     embed = discord.Embed(
@@ -74,32 +79,32 @@ async def show_voice_setting(bot, ctx):
     await ctx.send(embed=set_meta(embed, ctx))
 
 
-async def change_pitch(bot, ctx, pitch):
+async def change_pitch(bot: 'BardBot', ctx: commands.Context, pitch: float) -> None:
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(pitch=pitch)
     await ctx.send(embed=success_embed(f'ピッチを{data.pitch}から{pitch}に変更しました。', ctx))
 
 
-async def change_speed(bot, ctx, speed):
+async def change_speed(bot: 'BardBot', ctx: commands.Context, speed: float) -> None:
     document = bot.firestore.user.get(ctx.author.id)
     data = await document.data()
     await document.edit(speed=speed)
     await ctx.send(embed=success_embed(f'スピードを{data.speed}から{speed}に変更しました。', ctx))
 
 
+@dataclass
 class UserSetting(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    bot: 'BardBot'
 
-    async def refresh(self, ctx):
+    async def refresh(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.user.get(ctx.author.id)
         self.bot.user_settings.set(ctx.author.id,
                                    await document.data()
                                    )
 
     @commands.group(invoke_without_command=True)
-    async def voice(self, ctx, voice_type=None):
+    async def voice(self, ctx: commands.Context, voice_type=None) -> None:
         """ボイスの設定一覧表示"""
         if voice_type is None:
             await show_voice_setting(self.bot, ctx)
@@ -109,7 +114,7 @@ class UserSetting(commands.Cog):
         await self.refresh(ctx)
 
     @voice.command()
-    async def en(self, ctx, voice_type=None):
+    async def en(self, ctx: commands.Context, voice_type=None) -> None:
         """英語の設定"""
         if voice_type is None:
             await show_voice_setting(self.bot, ctx)
@@ -119,7 +124,7 @@ class UserSetting(commands.Cog):
         await self.refresh(ctx)
 
     @commands.command()
-    async def pitch(self, ctx, pitch: float = 0.0):
+    async def pitch(self, ctx: commands.Context, pitch: float = 0.0) -> None:
         if pitch < -6.5 or 6.5 < pitch:
             await ctx.send(embed=error_embed('ピッチは-6.5から6.5の間で指定してください。', ctx))
             return
@@ -128,7 +133,7 @@ class UserSetting(commands.Cog):
         await self.refresh(ctx)
 
     @commands.command(aliases=['rate'])
-    async def speed(self, ctx, speed: float = 1.0):
+    async def speed(self, ctx: commands.Context, speed: float = 1.0) -> None:
         if speed < 0.5 or 4.0 < speed:
             await ctx.send(embed=error_embed('スピードは0.5から4.0の間で指定してください。', ctx))
             return
@@ -137,5 +142,5 @@ class UserSetting(commands.Cog):
         await self.refresh(ctx)
 
 
-def setup(bot):
+def setup(bot: 'BardBot') -> None:
     return bot.add_cog(UserSetting(bot))

@@ -2,12 +2,17 @@ from discord.ext import commands
 import discord
 from lib import color
 from lib.embed import set_meta
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from bard import BardBot
+
 bot_invite = "https://discord.com/api/oauth2/authorize?client_id=727687910643466271&permissions=11855936&scope=bot"
 guild_invite = "https://discord.gg/QmCmMtp"
 website = "https://bardbot.net/"
 
 
-def get_info_embed(ctx):
+def get_info_embed(ctx: commands.Context) -> discord.Embed:
     info_embed = discord.Embed(title='Bard - 有料読み上げBot -', color=color.default)
     if ctx.guild and not ctx.author.is_on_mobile():
         info_embed.add_field(name='各種URL',
@@ -23,7 +28,7 @@ def get_info_embed(ctx):
     return info_embed
 
 
-def get_help_embed(ctx):
+def get_help_embed(ctx: commands.Context) -> discord.Embed:
     prefix = ctx.prefix
     cmds = [
         [f"{prefix}join", "ボイスチャンネルに接続します。"],
@@ -50,7 +55,7 @@ def get_help_embed(ctx):
     return set_meta(embed, ctx)
 
 
-def get_base_help_embed(ctx):
+def get_base_help_embed(ctx: commands.Context) -> discord.Embed:
     prefix = ctx.prefix
     cmds = [
         [f"{prefix}join", "ボイスチャンネルに接続します。"],
@@ -68,7 +73,7 @@ def get_base_help_embed(ctx):
     return set_meta(embed, ctx)
 
 
-def get_do_subscribe_embed(ctx):
+def get_do_subscribe_embed(ctx: commands.Context) -> discord.Embed:
     embed = discord.Embed(
         title='サブスクリプションに登録しませんか？',
         description='サブスクリプションに登録することで機能を使用可能になります。まず無料の3000文字を試してから、サブスクリプションに登録しましょう。0文字になると、使用できなくなります。',
@@ -84,12 +89,12 @@ def get_do_subscribe_embed(ctx):
     return set_meta(embed, ctx)
 
 
+@dataclass
 class Help(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    bot: 'BardBot'
 
     @commands.command()
-    async def help(self, ctx):
+    async def help(self, ctx: commands.Context) -> None:
         await ctx.send(f'{ctx.author.mention}, DMに全てのコマンド一覧を送信しました。`{ctx.prefix}cmd`で全ヘルプをこのチャンネルに表示します。')
         await ctx.send(embed=get_info_embed(ctx))
         await ctx.send(embed=get_base_help_embed(ctx))
@@ -102,9 +107,9 @@ class Help(commands.Cog):
             await ctx.send(embed=get_do_subscribe_embed(ctx))
 
     @commands.command(aliases=['cmd'])
-    async def command(self, ctx):
+    async def command(self, ctx: commands.Context) -> None:
         await ctx.send(embed=get_help_embed(ctx))
 
 
-def setup(bot):
+def setup(bot) -> None:
     return bot.add_cog(Help(bot))

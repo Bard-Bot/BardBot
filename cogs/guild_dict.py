@@ -3,10 +3,14 @@ from lib import color
 from lib.embed import error_embed, success_embed
 import discord
 import asyncio
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from bard import BardBot
 
 
 class Pagenator:
-    def __init__(self, bot, ctx, data: dict):
+    def __init__(self, bot: 'BardBot', ctx: commands.Context, data: dict) -> None:
         self.bot = bot
         self.data = data
         self.page = 0
@@ -16,7 +20,7 @@ class Pagenator:
         if self.page_count == 0:
             self.page_count = 1
 
-    def get_embed(self):
+    def get_embed(self) -> discord.Embed:
         embed = discord.Embed(title="辞書一覧",
                               color=color.default,
                               timestamp=self.ctx.message.created_at
@@ -28,15 +32,15 @@ class Pagenator:
         embed.set_author(name=f'{self.page+1} / {self.page_count} ページ')
         return embed
 
-    def check(self, reaction, user):
+    def check(self, reaction: discord.Reaction, member: discord.Member) -> bool:
         emoji = str(reaction.emoji)
-        return emoji in ["\U00002b05", "\U000027a1"] and user.id == self.ctx.author.id and reaction.message.id == self.message.id
+        return emoji in ["\U00002b05", "\U000027a1"] and member.id == self.ctx.author.id and reaction.message.id == self.message.id
 
-    async def try_delete_reaction(self, emoji, user):
+    async def try_delete_reaction(self, emoji: str, member: discord.Member) -> None:
         if self.ctx.guild.me.guild_permissions.manage_messages:
-            await self.message.remove_reaction(emoji, user)
+            await self.message.remove_reaction(emoji, member)
 
-    async def loop(self):
+    async def loop(self) -> None:
         while not self.bot.is_closed():
             try:
                 reaction, user = await self.bot.wait_for('reaction_add', check=self.check, timeout=60)
@@ -57,7 +61,7 @@ class Pagenator:
             await self.message.edit(embed=self.get_embed())
             await self.try_delete_reaction(emoji, user)
 
-    async def start(self):
+    async def start(self) -> None:
         embed = self.get_embed()
         self.message = await self.ctx.send(embed=embed)
         await self.message.add_reaction("\U00002b05")
@@ -65,12 +69,12 @@ class Pagenator:
         self.bot.loop.create_task(self.loop())
 
 
+@dataclass
 class GuildDict(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    bot: 'BardBot'
 
     @commands.group(aliases=['dict'], invoke_without_command=True)
-    async def word(self, ctx):
+    async def word(self, ctx: commands.Context) -> None:
         """辞書のすべての内容を表示します"""
         document = self.bot.firestore.dict.get(ctx.guild.id)
         data = await document.data()
@@ -78,7 +82,7 @@ class GuildDict(commands.Cog):
         await pagenator.start()
 
     @word.command(aliases=['put'])
-    async def add(self, ctx, key, *, value):
+    async def add(self, ctx: commands.Context, key: str, *, value: str) -> None:
         document = self.bot.firestore.dict.get(ctx.guild.id)
         await document.add(key, value)
 
@@ -86,7 +90,7 @@ class GuildDict(commands.Cog):
         await ctx.send(embed=success_embed(f'{key}を{value}として登録しました。', ctx))
 
     @word.command(aliases=['delete', 'del', 'pop'])
-    async def remove(self, ctx, *, key):
+    async def remove(self, ctx: commands.Context, *, key: str) -> None:
         document = self.bot.firestore.dict.get(ctx.guild.id)
         if not await document.remove(key):
 
@@ -97,5 +101,5 @@ class GuildDict(commands.Cog):
         await ctx.send(embed=success_embed(f'{key}を削除しました。', ctx))
 
 
-def setup(bot):
+def setup(bot: 'BardBot') -> None:
     return bot.add_cog(GuildDict(bot))

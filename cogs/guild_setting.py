@@ -2,6 +2,10 @@ from discord.ext import commands
 import discord
 from lib import color
 from lib.embed import success_embed, error_embed, set_meta
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from bard import BardBot
 
 
 def t_or_f(t):
@@ -17,17 +21,18 @@ how_to_change = """
 """
 
 
+@dataclass
 class GuildSetting(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    bot: 'BardBot'
 
-    async def refresh(self, ctx, document):
-        self.bot.guild_settings.set(ctx.guild.id,
-                                    await document.data()
-                                    )
+    async def refresh(self, ctx, document) -> None:
+        self.bot.guild_settings.set(
+            ctx.guild.id,
+            await document.data()
+        )
 
     @commands.group(invoke_without_command=True, aliases=['setting', 'preference'])
-    async def pref(self, ctx):
+    async def pref(self, ctx: commands.Context) -> None:
         """ギルドの設定を表示"""
         data = await self.bot.firestore.setting.get(ctx.guild.id).data()
         embed = discord.Embed(title=f"{ctx.guild.name} のサーバー設定",
@@ -42,7 +47,7 @@ class GuildSetting(commands.Cog):
         await ctx.send(embed=set_meta(embed, ctx))
 
     @pref.command()
-    async def name(self, ctx):
+    async def name(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(name=not data.name)
@@ -52,7 +57,7 @@ class GuildSetting(commands.Cog):
         )
 
     @pref.command()
-    async def emoji(self, ctx):
+    async def emoji(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(emoji=not data.emoji)
@@ -62,7 +67,7 @@ class GuildSetting(commands.Cog):
         )
 
     @pref.command()
-    async def bot(self, ctx):
+    async def bot(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(emoji=not data.bot)
@@ -72,7 +77,7 @@ class GuildSetting(commands.Cog):
         )
 
     @pref.command()
-    async def limit(self, ctx, limit=100):
+    async def limit(self, ctx: commands.Context, limit: int = 100) -> None:
         if limit <= 0 or 2000 < limit:
             await ctx.send(embed=error_embed('文字数は1から2000の間で指定してください。', ctx))
             return
@@ -83,7 +88,7 @@ class GuildSetting(commands.Cog):
         await ctx.send(embed=success_embed(f'文字数制限を`{data.limit}`文字から`{limit}`文字に変更しました。', ctx))
 
     @pref.command()
-    async def keep(self, ctx):
+    async def keep(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
         await document.edit(emoji=not data.keep)
