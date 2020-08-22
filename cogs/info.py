@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import discord
 from lib.embed import set_meta
 from lib.color import default
+from lib.voice_server import VoiceServer
 
 if TYPE_CHECKING:
     from bard import BardBot
@@ -41,6 +42,36 @@ class Info(commands.Cog):
         await ctx.send(
             embed=set_meta(embed, ctx)
         )
+
+    @commands.command()
+    async def status(self, ctx: commands.Context) -> None:
+        """現在のボイスの状態（接続先など）を表示する"""
+        server: VoiceServer = self.bot.voice_manager.get(ctx.guild.id)
+
+        embed = discord.Embed(
+            title=f"{ctx.guild.name}の状況",
+            description="Botが接続されているチャンネルなどを表示します。",
+            color=default
+        )
+        if server is None:
+            embed.add_field(
+                name="接続状況",
+                value="接続されていません。",
+                inline=False
+            )
+            await ctx.send(embed=set_meta(embed, ctx))
+            return
+        embed.add_field(
+            name="音声接続先のチャンネル",
+            value=f"{server.send_voice_channel.mention}",
+            inline=False
+        )
+        embed.add_field(
+            name="テキスト接続先のチャンネル",
+            value=f"{server.read_text_channel.mention}",
+            inline=False
+        )
+        await ctx.send(embed=set_meta(embed, ctx))
 
 
 def setup(bot: 'BardBot') -> None:
