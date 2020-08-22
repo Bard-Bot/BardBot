@@ -158,10 +158,6 @@ class VoiceServer:
     async def close(self, text="読み上げを終了します。", error=False):
         self.voice_client.stop()
         await self.session.close()
-        try:
-            await self.voice_client.disconnect(force=True)
-        except Exception as e:
-            pass
         self.task.cancel()
         if error:
             embed = discord.Embed(title='エラー',
@@ -180,6 +176,10 @@ class VoiceServer:
             except Exception:
                 pass
         self.bot.voice_manager.delete(self.read_text_channel.guild.id)
+        try:
+            await self.voice_client.disconnect(force=True)
+        except Exception as e:
+            pass
 
     async def move_voice_channel(self, new_voice_channel, new_text_channel):
         self.voice_client.stop()
