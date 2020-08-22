@@ -3,6 +3,7 @@ from lib import color
 from lib.embed import error_embed, success_embed
 import discord
 import asyncio
+from lib.checks import permit_by_role
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -82,6 +83,7 @@ class GuildDict(commands.Cog):
         await pagenator.start()
 
     @word.command(aliases=['put'])
+    @permit_by_role()
     async def add(self, ctx: commands.Context, key: str, *, value: str) -> None:
         document = self.bot.firestore.dict.get(ctx.guild.id)
         await document.add(key, value)
@@ -90,6 +92,7 @@ class GuildDict(commands.Cog):
         await ctx.send(embed=success_embed(f'{key}を{value}として登録しました。', ctx))
 
     @word.command(aliases=['delete', 'del', 'pop'])
+    @permit_by_role()
     async def remove(self, ctx: commands.Context, *, key: str) -> None:
         document = self.bot.firestore.dict.get(ctx.guild.id)
         if not await document.remove(key):

@@ -1,6 +1,7 @@
 from discord.ext import commands
 import discord
 from lib import color
+from lib.checks import permit_by_role
 from lib.embed import success_embed, error_embed, set_meta
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -47,6 +48,7 @@ class GuildSetting(commands.Cog):
         await ctx.send(embed=set_meta(embed, ctx))
 
     @pref.command()
+    @permit_by_role()
     async def name(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
@@ -57,6 +59,7 @@ class GuildSetting(commands.Cog):
         )
 
     @pref.command()
+    @permit_by_role()
     async def emoji(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
@@ -67,16 +70,18 @@ class GuildSetting(commands.Cog):
         )
 
     @pref.command()
+    @permit_by_role()
     async def bot(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
-        await document.edit(emoji=not data.bot)
+        await document.edit(bot=not data.bot)
         await self.refresh(ctx, document)
         await ctx.send(
             embed=success_embed(f'Botのメッセージを `{t_or_f(data.bot)}` から `{t_or_f(not data.bot)}` に変更しました。', ctx)
         )
 
     @pref.command()
+    @permit_by_role()
     async def limit(self, ctx: commands.Context, limit: int = 100) -> None:
         if limit <= 0 or 2000 < limit:
             await ctx.send(embed=error_embed('文字数は1から2000の間で指定してください。', ctx))
@@ -88,10 +93,11 @@ class GuildSetting(commands.Cog):
         await ctx.send(embed=success_embed(f'文字数制限を`{data.limit}`文字から`{limit}`文字に変更しました。', ctx))
 
     @pref.command()
+    @permit_by_role()
     async def keep(self, ctx: commands.Context) -> None:
         document = self.bot.firestore.setting.get(ctx.guild.id)
         data = await document.data()
-        await document.edit(emoji=not data.keep)
+        await document.edit(keep=not data.keep)
         b = '再接続する' if data.keep else '再接続しない'
         a = '再接続する' if (not data.keep) else '再接続しない'
         await self.refresh(ctx, document)
