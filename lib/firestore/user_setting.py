@@ -26,7 +26,7 @@ class UserSettingSnapshot:
         self.bot = user_setting.bot
 
     async def data(self):
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
         d = result.to_dict()
         if d is None:
             return await self.create()
@@ -34,7 +34,7 @@ class UserSettingSnapshot:
         return UserSettingData(d)
 
     async def exists(self):
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
 
         return result.exists
 
@@ -47,7 +47,7 @@ class UserSettingSnapshot:
             speed=1.0,
         )
 
-        await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
+        await self.document.set(payload)
         return UserSettingData(payload)
 
     async def edit(self, voice=None, pitch=None, speed=None):
@@ -58,7 +58,7 @@ class UserSettingSnapshot:
 
         payload = dict(voice=voice, pitch=pitch, speed=speed)
 
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, payload, merge=True))
+        await self.document.set(payload, merge=True)
 
 
 class UserSetting:
