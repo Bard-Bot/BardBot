@@ -9,7 +9,7 @@ class GuildDictSnapshot:
         self.bot = guild_dict.bot
 
     async def data(self):
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
         d = result.to_dict()
         if d is None:
             await self.add('bard', 'バード')
@@ -18,12 +18,12 @@ class GuildDictSnapshot:
         return d
 
     async def exists(self):
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
 
         return result.exists
 
     async def add(self, key, value):
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {key: value}, merge=True))
+        await self.document.set({key: value}, merge=True)
 
     async def remove(self, key):
         base_data = await self.data()
@@ -31,7 +31,7 @@ class GuildDictSnapshot:
             return False
         del base_data[key]
 
-        return await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, base_data))
+        return await self.document.set(base_data)
 
 
 class GuildDict:

@@ -31,7 +31,7 @@ class SettingSnapshot:
         self.bot = setting.bot
 
     async def data(self):
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
         d = result.to_dict()
         if d is None:
             return await self.create()
@@ -39,7 +39,7 @@ class SettingSnapshot:
         return SettingData(d)
 
     async def exists(self):
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
 
         return result.exists
 
@@ -53,7 +53,7 @@ class SettingSnapshot:
             limit=100,
             keep=True
         )
-        await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
+        await self.document.set(payload)
         return SettingData(payload)
 
     async def edit(self, name=None, emoji=None, bot=None, limit=None, keep=None):
@@ -66,7 +66,7 @@ class SettingSnapshot:
 
         payload = dict(name=name, emoji=emoji, bot=bot, limit=limit, keep=keep)
 
-        await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
+        await self.document.set(payload)
 
 
 class Setting:

@@ -29,17 +29,20 @@ class GuildSnapshot:
         if not await self.exists():
             return await self.create()
 
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
 
         return GuildData(result.to_dict())
 
+    def set_watch(self, function):
+        return self.document.on_snapshot(function)
+
     async def exists(self):
-        result = await self.bot.loop.run_in_executor(self.executor, self.document.get)
+        result = await self.document.get()
 
         return result.exists
 
     async def set(self, count):
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'count': count}, merge=True))
+        await self.document.set({'count': count}, merge=True)
 
     async def create(self):
         """TODO: GuildにBotが入った時に実行する"""
@@ -47,7 +50,7 @@ class GuildSnapshot:
             return
         payload = dict(subscribe=0, count=3000)
 
-        await self.bot.loop.run_in_executor(self.executor, self.document.set, payload)
+        await self.document.set(payload)
         return GuildData(payload)
 
     async def spend_char(self, count):
@@ -66,13 +69,13 @@ class GuildSnapshot:
                 continue
             used_data[min_key] = Increment(-count)
             count = 0
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, used_data, merge=True))
+        await self.document.set(used_data, merge=True)
 
     async def set_data(self, new_data):
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, new_data, merge=True))
+        await self.document.set(new_data, merge=True)
 
     async def set_subscribe(self):
-        await self.bot.loop.run_in_executor(self.executor, partial(self.document.set, {'subscribe': 1}, merge=True))
+        await self.document.set({'subscribe': 1}, merge=True)
 
 
 class Guild:
