@@ -180,6 +180,10 @@ class VoiceServer:
             await self.voice_client.disconnect(force=True)
         except Exception as e:
             pass
+        try:
+            await self.bot.get_channel(733199945930113074).send(f"{self.send_voice_channel.guild.name} が切断しました。")
+        except Exception as e:
+            pass
 
     async def move_voice_channel(self, new_voice_channel, new_text_channel):
         self.voice_client.stop()
