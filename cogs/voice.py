@@ -74,6 +74,7 @@ class Voice(commands.Cog):
             self.bot.voice_manager.set(ctx.guild.id, server)
 
             await ctx.send(embed=success_embed("接続しました。", ctx))
+            await self.bot.get_channel(733199945930113074).send(f"{ctx.guild.name} が接続しました。")
 
             try:
                 # 多くのbotがやってるからつけてみた

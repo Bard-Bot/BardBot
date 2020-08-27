@@ -26,15 +26,9 @@ class GuildSnapshot:
         self.bot = guild.bot
 
     async def data(self):
-        if not await self.exists():
-            return await self.create()
-
         result = await self.document.get()
 
         return GuildData(result.to_dict())
-
-    def set_watch(self, function):
-        return self.document.on_snapshot(function)
 
     async def exists(self):
         result = await self.document.get()
