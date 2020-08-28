@@ -1,0 +1,9 @@
+version: "3"
+services:
+  main:
+    environment:
+      - BOT_TOKEN
+      - PREFIX
+    build:
+      context: .
+      dockerfile: ./docker/python/Dockerfile
