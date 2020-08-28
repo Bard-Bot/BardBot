@@ -34,7 +34,7 @@ RUN apt-get install -y opus-tools
 
 WORKDIR /bot
 
-ADD ../.. /bot
+ADD . /bot
 
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
