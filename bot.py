@@ -8,14 +8,12 @@ from lib.voice_manager import VoiceManager
 from lib.google_cloud_token import TokenGenerator
 import asyncio
 import uvloop
-import sentry_sdk
 from lib.embed import error_embed
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 load_dotenv(verbose=True)
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
-sentry_sdk.init(environ.get("sentry"))
 
 
 def _prefix_callable(bot, msg):
@@ -47,12 +45,12 @@ class Storage:
 class BardBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=_prefix_callable, help_command=None,
+                         intents=discord.Intents.all(),
                          loop=asyncio.get_event_loop())
 
         self.firestore = FireStore(self)
         self.google_cloud_token = None
         self.token_generator = TokenGenerator(environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
-        sentry_sdk.capture_exception(Exception("This is an example of an error message."))
         self.loop.create_task(self.google_cloud_token_loop())
         self.voice_manager = VoiceManager(self)
 
@@ -75,8 +73,6 @@ class BardBot(commands.Bot):
         if isinstance(exception, commands.BadArgument) or isinstance(exception, commands.BadUnionArgument):
             await context.send('引数の型が間違っています。ヘルプコマンドを参照してください。')
             return
-
-        sentry_sdk.capture_exception(exception.original)
 
     async def on_ready(self):
         await self.change_presence(
