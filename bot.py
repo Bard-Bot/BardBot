@@ -44,8 +44,10 @@ class Storage:
 
 class BardBot(commands.Bot):
     def __init__(self):
+        intents = discord.Intents.default()
+        intents.members = True
         super().__init__(command_prefix=_prefix_callable, help_command=None,
-                         intents=discord.Intents.all(),
+                         intents=intents,
                          loop=asyncio.get_event_loop())
 
         self.firestore = FireStore(self)

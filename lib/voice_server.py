@@ -4,7 +4,6 @@ import discord
 import io
 import audioop
 import re
-import sentry_sdk
 import aiohttp
 import emoji_data_python
 from lib import color
@@ -225,8 +224,8 @@ class VoiceServer:
 
         except audioop.error as e:
             await self.close("内部エラーが発生しました。再接続してください。", error=True)
-            sentry_sdk.capture_exception(e)
+            print(e)
 
         except Exception as e:
-            sentry_sdk.capture_exception(e)
+            print(e)
             await self.close("内部エラーが発生しました。再接続してください。", error=True)

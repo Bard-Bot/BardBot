@@ -2,7 +2,6 @@ from discord.ext import commands
 from lib.voice_server import VoiceServer
 import discord
 import asyncio
-import sentry_sdk
 from lib.embed import error_embed, success_embed
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -98,7 +97,7 @@ class Voice(commands.Cog):
             await ctx.send(
                 embed=error_embed('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。', ctx)
             )
-            sentry_sdk.capture_exception(exception)
+            print(exception)
 
     @commands.command()
     async def leave(self, ctx: commands.Context) -> None:
@@ -134,7 +133,7 @@ class Voice(commands.Cog):
         await ctx.send(
             embed=error_embed('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。', ctx)
         )
-        sentry_sdk.capture_exception(exception)
+        print(exception)
 
     @commands.command()
     async def fleave(self, ctx: commands.Context) -> None:
@@ -176,7 +175,7 @@ class Voice(commands.Cog):
             await ctx.send(
                 embed=error_embed('予期せぬエラーが発生しました。再度お試しください。それでも表示される場合は公式サポートサーバーよりご連絡ください。', ctx)
             )
-            sentry_sdk.capture_exception(exception)
+            print(exception)
 
 
 def setup(bot):
